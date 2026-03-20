@@ -848,10 +848,6 @@ The table below maps each official DEVTrails 2026 deliverable expectation to the
 
 For the purposes of this hackathon, ZoneGuard operates in a sandboxed simulation environment. The post-hackathon production path requires securing a white-label underwriting partnership with an IRDAI-licensed general insurer before real premium collection begins.
 
-**Identified production-ready partner candidates:**
-- **Bajaj Allianz** — ClimateSafe for gig workers product launched 2025; direct product alignment
-- **ICICI Lombard** — backs SEWA's parametric microinsurance at scale (225,000 workers covered, 2023–present); proven parametric operations at India's informal workforce scale
-
 ZoneGuard's IRDAI "Use & File" regulatory design means product launch can begin within weeks of securing a partner, not months.
 
 ---
