@@ -833,15 +833,6 @@ The table below maps each official DEVTrails 2026 deliverable expectation to the
 | **Payout processing via appropriate channels** | Razorpay test-mode UPI simulation. Auto-payout within 2 hours on HIGH confidence. Payout capped at 75% of 7-day earnings baseline. Zero rider action required. | [Sections 6, 14](#6-weekly-premium-model) |
 | **Analytics dashboard showing relevant metrics** | Rider Analytics Dashboard (earnings protected, payout history, zone risk, coverage card) + Insurer Admin Analytics Dashboard (zone risk heatmaps, loss ratios, QuadSignal log, disruption alerts, FraudShield queue). | [Section 17 — Phase 3](#17-development-roadmap-6-weeks) |
 
-### Critical Constraint Compliance
-
-| Constraint | Status | Evidence |
-|------------|--------|----------|
-| **Coverage = LOSS OF INCOME ONLY** | ✅ Strictly enforced | Sections 1, 2 + footer disclaimer. Health, life, accidents, vehicle repairs structurally excluded by platform design and IRDAI parametric scope. |
-| **Weekly pricing model** | ✅ Core architecture | Section 6: ₹39–₹225/week, Monday recalculation, aligned to Amazon Flex weekly payout cycle. |
-| **Single delivery sub-category persona** | ✅ Amazon Flex (E-Commerce) | Sections 3–4: Chosen for zone-assignment structure, fraud resistance, and per-disruption income loss magnitude. |
-| **Adversarial Defense section (Market Crash Response)** | ✅ Complete with all 3 sub-requirements | Section 10: 10.1 Differentiation, 10.2 The Data, 10.3 UX Balance. |
-
 ---
 
 ## Regulatory Note
