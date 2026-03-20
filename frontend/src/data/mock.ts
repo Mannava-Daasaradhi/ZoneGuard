@@ -1,4 +1,4 @@
-import { Zone, WeekDay, Payout, Signal, ClaimEvent, KPI } from '../types';
+import type { Zone, WeekDay, Payout, Signal, ClaimEvent, KPI } from '../types';
 
 export const ZONES: Zone[] = [
   { id: 'hsr', name: 'HSR Layout', pinCode: '560102', riskTier: 'medium', riskScore: 58, weeklyPremium: 49, maxWeeklyPayout: 2200, activeRiders: 142, disruptions: 3 },
