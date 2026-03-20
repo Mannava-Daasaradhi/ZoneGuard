@@ -7,7 +7,7 @@
 
 ![Phase](https://img.shields.io/badge/Phase-1%20Final%20Submission-blue)
 ![Persona](https://img.shields.io/badge/Persona-Amazon%20Flex%20E--Commerce-green)
-![Premium](https://img.shields.io/badge/Weekly%20Premium-₹29–₹99-purple)
+![Premium](https://img.shields.io/badge/Weekly%20Premium-₹39–₹225-purple)
 ![Payout](https://img.shields.io/badge/Payout%20Window-Under%202%20Hours-orange)
 ![Onboarding](https://img.shields.io/badge/Onboarding-WhatsApp%20Native%2090s-yellow)
 ![Hackathon](https://img.shields.io/badge/Guidewire-DEVTrails%202026-red)
@@ -50,7 +50,7 @@ India's gig economy is projected to reach **2.35 crore platform workers by 2030*
 | Income loss coverage | No | No | **Yes — primary purpose** |
 | Claims trigger | Incident report + survey | Death/disability only | **Automated parametric signal** |
 | Payout timeline | 7–30 days | Weeks | **< 2 hours** |
-| Weekly pricing | No | Annual only | **Yes — ₹29 to ₹99/week** |
+| Weekly pricing | No | Annual only | **Yes** |
 | Gig worker accessible | No (salaried proof required) | Partial | **Native — WhatsApp onboarding** |
 | Documentation burden | High | Medium | **Zero** |
 | Covers external disruptions | No | No | **Yes — the only product that does** |
@@ -126,19 +126,19 @@ Because Flex riders follow assigned routes in specific zones, GPS anomaly detect
 
 > Ravi lost ₹5,200 this week. His EMI is ₹3,800. **He defaults.** This becomes a debt trap.
 
-### With ZoneGuard (₹49/week, HSR Layout Medium Risk tier)
+### With ZoneGuard (₹89/week, HSR Layout Medium Risk tier)
 
 | Day | Event | Ravi's Earnings | ZoneGuard Payout |
 |-----|-------|----------------|-----------------|
 | Monday | Normal | ₹2,600 | — |
 | Tuesday | Normal | ₹2,800 | — |
-| Wednesday | Flash flood — **all 4 signals fire** | ₹0 | **₹1,950** (75% of daily baseline) |
-| Thursday | Flood sustained — signals active | ₹0 | **₹1,950** |
+| Wednesday | Flash flood — **all 4 signals fire** | ₹0 | **₹1,430** (55% of daily baseline) |
+| Thursday | Flood sustained — signals active | ₹0 | **₹1,430** |
 | Friday | Zone clears | ₹2,400 | — |
-| **Weekly Total** | | **₹7,800 + ₹3,900 payout** | **₹11,700** |
+| **Weekly Total** | | **₹7,800 + ₹2,860 payout** | **₹10,660** |
 
-> Ravi lost ₹1,300 instead of ₹5,200. **He pays his EMI. He stays on the road.**
-> Net cost of ZoneGuard this week: ₹49. Net benefit: ₹3,900 — an 80x return on the premium during a disruption week.
+> Ravi lost ₹2,340 instead of ₹5,200. **He pays his EMI. He stays on the road.**
+> Net cost of ZoneGuard this week: ₹89. Net benefit: ₹2,860 
 
 **The payout was automatic. Ravi received a WhatsApp notification. He filed nothing.**
 
@@ -166,8 +166,8 @@ Step 3 ── Conversational bot (3 messages, no forms):
 
 Step 4 ── Bot presents weekly premium quote:
           "Your zone: HSR Layout (Medium Risk)
-           Your weekly premium: ₹49
-           Your max weekly payout: ₹2,200
+           Your weekly premium: ₹89
+           Your max weekly payout: ₹4,290
            Coverage starts: Immediately on confirmation."
           Rider replies: YES
 
@@ -212,20 +212,20 @@ Every **Monday morning**, ZoneGuard's XGBoost model recalculates each zone's pre
 
 ### Premium Tiers (Actuarially Derived)
 
-| Zone Risk Class | Example Zones | Disruption Days/Year | Weekly Premium | Max Weekly Payout |
-|----------------|---------------|----------------------|----------------|------------------|
-| Low Risk | Whitefield (BLR), Wakad (Pune) | ~1 | **₹29** | ₹1,800 |
-| Medium Risk | HSR Layout, Andheri West | ~3 | **₹49** | ₹2,200 |
-| High Risk | Dharavi, Kukatpally | ~5 | **₹69** | ₹2,800 |
-| Flood-Prone | Riverbank zones, low-lying areas | ~8 | **₹99** | ₹3,500 |
+| Zone Risk Class | Example Zones | Disruption Days/Year | Weekly Premium | Max Annual Payout | Annual Revenue |Annual Profit (per Rider)
+|----------------|---------------|----------------------|----------------|------------------|--------------|--------------|
+| Low Risk | Whitefield (BLR), Wakad (Pune) | ~1 | **₹39** | ₹1,430 | ₹2,028|+₹598
+| Medium Risk | HSR Layout, Andheri West | ~3 | **₹89** | ₹4,290 | ₹4,628|+₹338
+| High Risk | Dharavi, Kukatpally | ~5 | **₹139** | ₹7,150 | ₹7,228|+₹78
+| Flood-Prone | Riverbank zones, low-lying areas | ~8 | **₹225** | ₹11,440 | ₹11,700|+₹260
 
-**Premium-to-earnings ratio:** 0.2–0.6% of weekly earnings. Approximately the cost of **one to two teas per day**.
+
 
 ### Coverage Rules
 
 | Rule | Value | Rationale |
 |------|-------|-----------|
-| Payout rate | **75% of 7-day average daily earnings** | 25% retained — moral hazard prevention |
+| Payout rate | **55% of 7-day average daily earnings** | 45% retained — moral hazard prevention |
 | Max disruption days covered/week | **3 consecutive days** | Beyond = declared disaster; separate mechanisms apply |
 | Minimum disruption duration | **4 continuous hours (6am–10pm)** | Filters brief non-income-impacting disruptions |
 | Waiting period — environmental | **None** | No time to game; signals are objective |
@@ -571,7 +571,7 @@ Raw rider GPS and activity data NEVER leaves the city.
 | Basis Risk Source | ZoneGuard's Mitigation |
 |---|---|
 | Weather API reports rain in pin code, but rider was in adjacent dry area | Signal 4 crowd check-in required. If rider's GPS showed movement in dry area, FraudShield cross-reference flags and excludes their claim |
-| Trigger fires but rider chose not to work for personal reasons | Payout capped at 75% of baseline — rider cannot profit from disruption. 25% moral hazard retention is structural |
+| Trigger fires but rider chose not to work for personal reasons | Payout capped at 55% of baseline — rider cannot profit from disruption. 45% moral hazard retention is structural |
 | API measurement point not granular enough for specific micro-zone | Pin-code level data used, never city-level. OSRM mobility index computed per-zone |
 | Rider earns more on disrupted days via surge pricing | Covered income capped at 7-day average earnings baseline — not theoretical maximum earnings |
 | Seasonal income variation makes baseline inaccurate | ZoneTwin applies seasonal decomposition. Monsoon weeks use monsoon-adjusted baselines, not flat annual averages |
@@ -689,16 +689,16 @@ ZoneGuard is a **technology platform**, not a licensed insurer. In production:
 | Metric | Value |
 |--------|-------|
 | Target riders (3% penetration) | ~27,000 |
-| Average weekly premium (blended) | ₹52 |
-| Annual premium per rider | ₹2,704 |
-| Annual gross premium (27K riders) | **₹7.3 Crore (~$875K)** |
-| Expected loss ratio | 52–62% |
+| Average weekly premium (blended) | ₹123 |
+| Annual premium per rider | ₹6,396 |
+| Annual gross premium (27K riders) | **₹17.3 Crore (~$2.06M)** |
+| Expected loss ratio | 55–65% |
 | Customer Acquisition Cost | Near-zero (B2B2C platform partnership) |
 | Operational cost per claim | Near-zero (zero-touch automation) |
 
 ### Why The Loss Ratio Works
 
-ZoneGuard's QuadSignal convergence requirement reduces qualifying event days by **~38% compared to a single-weather-API trigger** (internal simulation basis: HSR Layout, monsoon season, 2022–2024 IMD data). Fewer events qualify, but every event that does is unambiguous, independently verified, and fast. This directly improves the loss ratio while **maintaining rider trust** — because the payouts that fire are real.
+At maximum payout exposure (all disruption days triggered, all claims paid), the blended loss ratio across ZoneGuard's four risk tiers reaches ~95%. However, ZoneGuard's QuadSignal convergence requirement reduces qualifying event days by ~38% compared to a single-weather-API trigger (internal simulation basis: HSR Layout, monsoon season, 2022–2024 IMD data). This compression brings the realized loss ratio to ~59%, well within the 55–65% target band. Fewer events qualify, but every event that does is unambiguous, independently verified, and fast — which means the payouts that fire are real, and rider trust is maintained.
 
 ### Distribution Path
 
@@ -828,7 +828,7 @@ The table below maps each official DEVTrails 2026 deliverable expectation to the
 |------------------------|-------------------|-------------------|
 | **Optimized onboarding for your delivery persona** | WhatsApp-native 90-second conversational flow — 3 messages, no forms, no app download. Flex Rider ID-based identity, instant policy activation. | [Section 5](#5-whatsapp-native-onboarding) |
 | **Risk profiling using AI/ML** | ZoneRisk Scorer (XGBoost, Monday recalculation), ZoneTwin digital simulation (per-zone counterfactuals + seasonal forecasting), FraudShield Isolation Forest (anomaly detection on claim patterns). | [Section 9](#9-aiml-architecture) |
-| **Policy creation with appropriate pricing structured on a Weekly basis** | Zone-specific weekly premiums ₹29–₹99 derived from XGBoost risk scoring. Monday recalculation. Forward Premium Lock (4-week, 8% discount). Payout = 75% of 7-day rolling average earnings. | [Section 6](#6-weekly-premium-model) |
+| **Policy creation with appropriate pricing structured on a Weekly basis** | Zone-specific weekly premiums ₹39–₹225 derived from XGBoost risk scoring. Monday recalculation. Forward Premium Lock (4-week, 8% discount). Payout = 75% of 7-day rolling average earnings. | [Section 6](#6-weekly-premium-model) |
 | **Claim triggering through relevant parametric events (loss of income triggers only)** | QuadSignal convergence across 6 defined triggers (ENV-01 through SOC-02). All triggers are income-loss-only. Health, life, accidents, and vehicle repairs are structurally excluded. | [Sections 7–8](#7-quadsignal-fusion-engine-the-core-innovation) |
 | **Payout processing via appropriate channels** | Razorpay test-mode UPI simulation. Auto-payout within 2 hours on HIGH confidence. Payout capped at 75% of 7-day earnings baseline. Zero rider action required. | [Sections 6, 14](#6-weekly-premium-model) |
 | **Analytics dashboard showing relevant metrics** | Rider Analytics Dashboard (earnings protected, payout history, zone risk, coverage card) + Insurer Admin Analytics Dashboard (zone risk heatmaps, loss ratios, QuadSignal log, disruption alerts, FraudShield queue). | [Section 17 — Phase 3](#17-development-roadmap-6-weeks) |
@@ -838,7 +838,7 @@ The table below maps each official DEVTrails 2026 deliverable expectation to the
 | Constraint | Status | Evidence |
 |------------|--------|----------|
 | **Coverage = LOSS OF INCOME ONLY** | ✅ Strictly enforced | Sections 1, 2 + footer disclaimer. Health, life, accidents, vehicle repairs structurally excluded by platform design and IRDAI parametric scope. |
-| **Weekly pricing model** | ✅ Core architecture | Section 6: ₹29–₹99/week, Monday recalculation, aligned to Amazon Flex weekly payout cycle. |
+| **Weekly pricing model** | ✅ Core architecture | Section 6: ₹39–₹225/week, Monday recalculation, aligned to Amazon Flex weekly payout cycle. |
 | **Single delivery sub-category persona** | ✅ Amazon Flex (E-Commerce) | Sections 3–4: Chosen for zone-assignment structure, fraud resistance, and per-disruption income loss magnitude. |
 | **Adversarial Defense section (Market Crash Response)** | ✅ Complete with all 3 sub-requirements | Section 10: 10.1 Differentiation, 10.2 The Data, 10.3 UX Balance. |
 
