@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://pranaav2409.github.io/ZoneGuard",
+  "homepage": "https://pranaav2409.github.io/ZoneGuard/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
