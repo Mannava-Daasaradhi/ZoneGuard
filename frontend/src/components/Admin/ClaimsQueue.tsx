@@ -33,7 +33,7 @@ export default function ClaimsQueue({ claims }: Props) {
 
       <div className="space-y-2.5">
         {claims.map((claim) => {
-          const status = statuses[claim.id]
+          const status = statuses[claim.id] ?? claim.status
           return (
             <div key={claim.id} className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
               <button

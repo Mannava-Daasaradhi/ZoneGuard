@@ -27,7 +27,8 @@ export default function OnboardingPage() {
   const [earnings, setEarnings] = useState('')
 
   const selectedZone = ZONES.find(z => z.id === selectedZoneId)
-  const dailyAvg = earnings ? Math.round(parseInt(earnings) / 7) : 0
+  const earningsNum = parseInt(earnings, 10)
+  const dailyAvg = earnings && !isNaN(earningsNum) ? Math.round(earningsNum / 7) : 0
   const perDayPayout = Math.round(dailyAvg * 0.75)
 
   const goBack = () => {
@@ -40,6 +41,7 @@ export default function OnboardingPage() {
       {/* Header */}
       <header className="bg-white border-b border-amber-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
         <button
+          aria-label="Go back"
           onClick={goBack}
           className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-amber-50 text-amber-600 transition-colors"
         >
@@ -173,7 +175,7 @@ export default function OnboardingPage() {
                   ['Risk tier', tierLabel[selectedZone.riskTier]],
                   ['Weekly premium', `₹${selectedZone.weeklyPremium}`],
                   ['Max payout/week', `₹${selectedZone.maxWeeklyPayout.toLocaleString()}`],
-                  ['Per-day payout', earnings && parseInt(earnings) > 0
+                  ['Per-day payout', earnings && earningsNum > 0
                     ? `₹${perDayPayout.toLocaleString()} (75% of ₹${dailyAvg.toLocaleString()} daily avg)`
                     : '—  Enter earnings above'],
                 ] as [string, string][]).map(([k, v]) => (

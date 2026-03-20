@@ -14,6 +14,7 @@ export default function AdminDashboard() {
       <header className="bg-slate-950 border-b border-slate-800 px-4 lg:px-6 py-3 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <button
+            aria-label="Go back"
             onClick={() => navigate('/')}
             className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
           >

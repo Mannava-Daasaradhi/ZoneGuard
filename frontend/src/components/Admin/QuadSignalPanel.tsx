@@ -20,7 +20,7 @@ const confidenceConfig: Record<ConfidenceLevel, { bg: string; border: string; te
 }
 
 export default function QuadSignalPanel() {
-  const [signals, setSignals] = useState<Signal[]>(QUAD_SIGNALS)
+  const [signals, setSignals] = useState<Signal[]>(() => QUAD_SIGNALS.map(s => ({ ...s })))
   const [isDemoRunning, setIsDemoRunning] = useState(false)
   const [payoutFired, setPayoutFired] = useState(false)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -55,7 +55,8 @@ export default function QuadSignalPanel() {
 
   const reset = () => {
     timers.current.forEach(clearTimeout)
-    setSignals(QUAD_SIGNALS)
+    timers.current = []
+    setSignals(QUAD_SIGNALS.map(s => ({ ...s })))
     setPayoutFired(false)
     setIsDemoRunning(false)
   }
