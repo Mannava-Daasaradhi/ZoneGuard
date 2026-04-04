@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, Circle, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useEffect } from 'react'
+import type { ZoneSignalData } from '../../types'
 
 interface ZoneMapData {
   id: string
@@ -21,7 +22,7 @@ interface Props {
   selectedZoneId?: string
   height?: string
   showPopups?: boolean
-  signalData?: Record<string, any>
+  signalData?: Record<string, ZoneSignalData>
 }
 
 const ZONE_COORDS: Record<string, { lat: number; lng: number }> = {

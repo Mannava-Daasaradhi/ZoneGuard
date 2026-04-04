@@ -6,23 +6,24 @@ import WeekTimeline from '../components/Rider/WeekTimeline'
 import PolicyCard from '../components/Policy/PolicyCard'
 import CoverageCard from '../components/Rider/CoverageCard'
 import BengaluruZoneMap from '../components/Map/BengaluruZoneMap'
-import type { PolicyData, ZoneSignalData } from '../types'
+import type { PolicyData, ZoneSignalData, RawApiZone, RawApiPayout } from '../types'
 
 export default function RiderDashboard() {
   const navigate = useNavigate()
-  const [rider, setRider] = useState<any>(RIDER)
+  const [rider, setRider] = useState<typeof RIDER>(RIDER)
   const [policy, setPolicy] = useState<PolicyData | null>(null)
   const [payouts, setPayouts] = useState(PAYOUTS)
   const [signalData, setSignalData] = useState<ZoneSignalData | null>(null)
-  const [zones, setZones] = useState<any[]>([])
+  const [zones, setZones] = useState<RawApiZone[]>([])
   const [apiAvailable, setApiAvailable] = useState(false)
 
   useEffect(() => {
     const init = async () => {
       try {
-        // Try loading rider from API (first seeded rider)
-        const r = await getRider('AMZFLEX-BLR-04821')
-        setRider({ ...RIDER, name: r.name, riderId: r.id, zone: ZONES[0], weeklyEarningsBaseline: r.weekly_earnings_baseline, tenureWeeks: r.tenure_weeks })
+        // Try loading rider from API — use localStorage if set by onboarding, else fall back to seeded rider
+        const storedRiderId = localStorage.getItem('zoneguard_rider_id') || 'AMZFLEX-BLR-04821'
+        const r = await getRider(storedRiderId)
+        setRider({ ...RIDER, name: r.name, riderId: r.id, zone: ZONES[0], weeklyEarningsBaseline: r.weekly_earnings_baseline ?? RIDER.weeklyEarningsBaseline, tenureWeeks: r.tenure_weeks ?? RIDER.tenureWeeks })
 
         const policies = await getPolicies(r.id)
         if (policies.length > 0) {
@@ -31,9 +32,9 @@ export default function RiderDashboard() {
 
         const p = await getPayouts(r.id)
         if (p.length > 0) {
-          setPayouts(p.map((pay: any) => ({
+          setPayouts(p.map((pay: RawApiPayout) => ({
             id: pay.id, date: pay.created_at?.split('T')[0] || '', amount: pay.amount,
-            zone: 'HSR Layout', trigger: 'Auto-payout', confidence: 'HIGH' as const, upiRef: pay.upi_ref,
+            zone: 'HSR Layout', trigger: 'Auto-payout', confidence: 'HIGH' as const, upiRef: pay.upi_ref || '',
           })))
         }
 
@@ -61,7 +62,7 @@ export default function RiderDashboard() {
       : 'Normal'
   ) : 'Normal'
 
-  const mapZones = (zones.length > 0 ? zones : ZONES).map((z: any) => ({
+  const mapZones = (zones.length > 0 ? zones : ZONES as RawApiZone[]).map((z) => ({
     id: z.id, name: z.name, lat: z.lat || 12.9716, lng: z.lng || 77.5946,
     riskScore: z.risk_score ?? z.riskScore ?? 50, riskTier: z.risk_tier || z.riskTier || 'medium',
     activeRiders: z.active_riders ?? z.activeRiders ?? 0, weeklyPremium: z.weekly_premium ?? z.weeklyPremium ?? 49,
@@ -128,11 +129,11 @@ export default function RiderDashboard() {
         <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
           <h2 className="text-stone-800 font-bold text-lg mb-4">Payout History</h2>
           <div className="space-y-2.5">
-            {payouts.map((p: any, i: number) => (
+            {payouts.map((p, i) => (
               <div key={p.id} className={`flex items-center justify-between p-3.5 rounded-xl border ${i === 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-stone-50 border-stone-100'}`}>
                 <div>
                   <p className="text-stone-800 font-semibold text-sm">{p.trigger}</p>
-                  <p className="text-stone-500 text-xs mt-0.5">{p.date} · Ref: {p.upiRef || p.upi_ref}</p>
+                  <p className="text-stone-500 text-xs mt-0.5">{p.date} · Ref: {p.upiRef}</p>
                 </div>
                 <div className="text-right">
                   <p className={`font-bold text-sm ${i === 0 ? 'text-emerald-600' : 'text-stone-700'}`}>+₹{p.amount.toLocaleString()}</p>

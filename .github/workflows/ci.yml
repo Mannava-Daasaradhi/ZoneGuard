@@ -42,8 +42,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install core dependencies
-        run: pip install fastapi pydantic pydantic-settings python-dotenv httpx scikit-learn numpy pandas
+      - name: Install backend dependencies
+        run: pip install -r requirements.txt
 
       - name: Verify app loads
         run: python -c "from main import app; print('OK routes:', len(app.routes))"

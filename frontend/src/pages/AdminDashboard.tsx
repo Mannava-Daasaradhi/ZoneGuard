@@ -6,13 +6,13 @@ import KPIStrip from '../components/Admin/KPIStrip'
 import QuadSignalPanel from '../components/Admin/QuadSignalPanel'
 import BengaluruZoneMap from '../components/Map/BengaluruZoneMap'
 import DisruptionSimulator from '../components/Simulator/DisruptionSimulator'
-import type { KPI, ZoneSignalData, SimulationResult } from '../types'
+import type { KPI, ZoneSignalData, SimulationResult, RawApiZone, RawApiClaim } from '../types'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
-  const [zones, setZones] = useState<any[]>([])
+  const [zones, setZones] = useState<RawApiZone[]>([])
   const [kpis, setKPIs] = useState<KPI[]>(KPIS)
-  const [claims, setClaims] = useState<any[]>(CLAIMS_QUEUE)
+  const [claims, setClaims] = useState<RawApiClaim[]>(CLAIMS_QUEUE as RawApiClaim[])
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
   const [signalData, setSignalData] = useState<Record<string, ZoneSignalData>>({})
   const [apiAvailable, setApiAvailable] = useState(false)
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
         const c = await getClaims({})
         if (c.length > 0) {
-          setClaims(c.map((claim: any) => ({
+          setClaims(c.map((claim) => ({
             id: claim.id, zone: claim.zone_id, zone_id: claim.zone_id, rider_id: claim.rider_id,
             date: claim.created_at?.split('T')[0] || '', confidence: claim.confidence,
             signals: 3, recommendedPayout: claim.recommended_payout, recommended_payout: claim.recommended_payout,
@@ -41,13 +41,13 @@ export default function AdminDashboard() {
         }
       } catch {
         setApiAvailable(false)
-        setZones(ZONES as any[])
+        setZones(ZONES as RawApiZone[])
       }
     }
     init()
   }, [])
 
-  const normalizedZones = zones.map((z: any) => ({
+  const normalizedZones = zones.map((z) => ({
     id: z.id, name: z.name, lat: z.lat || 12.9716, lng: z.lng || 77.5946,
     riskScore: z.risk_score ?? z.riskScore ?? 50, riskTier: z.risk_tier || z.riskTier || 'medium',
     activeRiders: z.active_riders ?? z.activeRiders ?? 0, weeklyPremium: z.weekly_premium ?? z.weeklyPremium ?? 49,
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
     // Refresh claims
     if (result.claims?.length > 0) {
       setClaims(prev => [
-        ...result.claims.map((c: any) => ({
+        ...result.claims.map((c) => ({
           id: c.id, zone: result.zone.name, zone_id: result.zone.id, rider_id: c.rider_id,
           date: new Date().toISOString().split('T')[0], confidence: result.fusion.confidence,
           signals: result.fusion.signals_fired, recommendedPayout: c.recommended_payout,
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
                           <p className="text-slate-400 text-xs">
                             {claim.exclusion_check.exclusions_evaluated?.length || 10} exclusions evaluated
                             {claim.exclusion_check.exclusions_triggered?.length > 0 && (
-                              <span className="text-red-400"> · {claim.exclusion_check.exclusions_triggered.map((e: any) => e.name).join(', ')}</span>
+                              <span className="text-red-400"> · {claim.exclusion_check.exclusions_triggered.map((e) => e.name).join(', ')}</span>
                             )}
                           </p>
                         </div>

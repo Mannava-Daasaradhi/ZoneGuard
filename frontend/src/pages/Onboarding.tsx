@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ZONES } from '../data/mock'
-import type { Zone, Exclusion, PremiumBreakdown } from '../types'
+import type { Zone, Exclusion, PremiumBreakdown, RawApiZone } from '../types'
 import { getZones, registerRider, createPolicy, calculatePremium } from '../services/api'
 import BengaluruZoneMap from '../components/Map/BengaluruZoneMap'
 import ExclusionsList from '../components/Policy/ExclusionsList'
@@ -39,7 +39,7 @@ export default function OnboardingPage() {
   const [riderName, setRiderName] = useState('')
   const [selectedZoneId, setSelectedZoneId] = useState('')
   const [earnings, setEarnings] = useState('')
-  const [zones, setZones] = useState<any[]>([])
+  const [zones, setZones] = useState<RawApiZone[]>([])
   const [premiumData, setPremiumData] = useState<PremiumBreakdown | null>(null)
   const [loading, setLoading] = useState(false)
   const [apiAvailable, setApiAvailable] = useState(true)
@@ -102,12 +102,14 @@ export default function OnboardingPage() {
         })
         await createPolicy({ rider_id: riderId, zone_id: selectedZoneId })
       }
+      localStorage.setItem('zoneguard_rider_id', riderId)
       setStep(4)
-    } catch (err: any) {
+    } catch (err: unknown) {
       // If rider already exists, still proceed
-      if (err.message?.includes('already registered')) {
-        try { await createPolicy({ rider_id: riderId, zone_id: selectedZoneId }) } catch {}
+      if (err instanceof Error && err.message?.includes('already registered')) {
+        try { await createPolicy({ rider_id: riderId, zone_id: selectedZoneId }) } catch { /* ignore duplicate */ }
       }
+      localStorage.setItem('zoneguard_rider_id', riderId)
       setStep(4)
     } finally {
       setLoading(false)
@@ -166,8 +168,8 @@ export default function OnboardingPage() {
                 <BengaluruZoneMap
                   zones={normalizedZones.map(z => ({
                     id: z.id, name: z.name, lat: z.lat, lng: z.lng,
-                    riskScore: z.riskScore, riskTier: z.riskTier,
-                    activeRiders: z.activeRiders, weeklyPremium: z.weeklyPremium,
+                    riskScore: z.riskScore ?? 0, riskTier: z.riskTier,
+                    activeRiders: z.activeRiders ?? 0, weeklyPremium: z.weeklyPremium ?? 0,
                   }))}
                   selectedZoneId={selectedZoneId}
                   onZoneClick={handleZoneSelect}
@@ -221,7 +223,7 @@ export default function OnboardingPage() {
                     ['Zone', selectedZone.name],
                     ['Risk tier', tierLabel[selectedZone.riskTier]],
                     ['Weekly premium', `₹${selectedZone.weeklyPremium}`],
-                    ['Max payout/week', `₹${selectedZone.maxWeeklyPayout.toLocaleString()}`],
+                    ['Max payout/week', `₹${(selectedZone.maxWeeklyPayout ?? 0).toLocaleString()}`],
                     ['Per-day payout', earnings && earningsNum > 0
                       ? `₹${perDayPayout.toLocaleString()} (75% of ₹${dailyAvg.toLocaleString()} daily avg)`
                       : '— Enter earnings above'],
@@ -263,7 +265,7 @@ export default function OnboardingPage() {
               </div>
 
               <p className="text-stone-500 text-sm leading-relaxed mb-2">If all 4 signals converge in your zone,</p>
-              <p className="text-stone-800 font-bold text-lg mb-1">₹{selectedZone.maxWeeklyPayout.toLocaleString()} lands in your UPI</p>
+              <p className="text-stone-800 font-bold text-lg mb-1">₹{(selectedZone.maxWeeklyPayout ?? 0).toLocaleString()} lands in your UPI</p>
               <p className="text-stone-400 text-sm mb-6">automatically — within 2 hours. No claim needed.</p>
 
               <div className="bg-stone-50 border border-stone-100 rounded-xl p-4 text-left mb-4">
