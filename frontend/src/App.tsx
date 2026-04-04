@@ -3,6 +3,7 @@ import LandingPage from './pages/Landing'
 import RiderDashboard from './pages/RiderDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import OnboardingPage from './pages/Onboarding'
+import PolicyPage from './pages/PolicyPage'
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
       <Route path="/rider" element={<RiderDashboard />} />
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
+      <Route path="/policy" element={<PolicyPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

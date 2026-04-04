@@ -3,10 +3,12 @@ import type { ClaimEvent } from '../../types'
 
 interface Props { claims: ClaimEvent[] }
 
-const statusStyle = {
-  pending:  'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  approved: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
+const statusStyle: Record<string, string> = {
+  pending:        'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  pending_review: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  approved:       'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  rejected:       'bg-red-500/20 text-red-400 border-red-500/30',
+  held:           'bg-orange-500/20 text-orange-400 border-orange-500/30',
 }
 
 export default function ClaimsQueue({ claims }: Props) {
