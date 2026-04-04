@@ -35,16 +35,16 @@ export default function DisruptionSimulator({ zones, onSimulationTriggered }: Pr
   }
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-5">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div>
-          <h2 className="text-white font-bold text-lg">Disruption Simulator</h2>
+          <h2 className="text-white font-bold text-base sm:text-lg">Disruption Simulator</h2>
           <p className="text-slate-400 text-xs">Trigger a simulated disruption to demo the full pipeline</p>
         </div>
-        <span className="text-2xl">🎯</span>
+        <span className="text-xl sm:text-2xl">🎯</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
         {/* Zone selector */}
         <div>
           <label className="text-slate-400 text-xs block mb-1">Zone</label>
@@ -101,11 +101,11 @@ export default function DisruptionSimulator({ zones, onSimulationTriggered }: Pr
       {/* Result */}
       {result && (
         <div className="mt-4 space-y-3">
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 sm:p-4">
             <p className="text-emerald-400 font-bold text-sm mb-2">
               Disruption triggered in {result.zone.name}
             </p>
-            <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-xs">
               <div className="bg-slate-900 rounded-lg p-2 text-center">
                 <p className="text-white font-bold">{result.fusion.signals_fired}/4</p>
                 <p className="text-slate-400">Signals</p>

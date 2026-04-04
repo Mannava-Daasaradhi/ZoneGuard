@@ -134,12 +134,12 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col items-center justify-start px-4 py-8">
+      <main className="flex-1 flex flex-col items-center justify-start px-3 sm:px-4 py-6 sm:py-8">
         <div className="w-full max-w-lg">
 
           {/* Step 1: Rider ID + Name */}
           {step === 1 && (
-            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 sm:p-6">
               <div className="text-4xl mb-4">🪪</div>
               <h2 className="text-stone-800 font-bold text-xl mb-1">What's your Rider ID?</h2>
               <p className="text-stone-500 text-sm mb-6 leading-relaxed">
@@ -158,7 +158,7 @@ export default function OnboardingPage() {
 
           {/* Step 2: Zone selector with Leaflet map */}
           {step === 2 && (
-            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 sm:p-6">
               <div className="text-4xl mb-4">📍</div>
               <h2 className="text-stone-800 font-bold text-xl mb-1">Select your delivery zone</h2>
               <p className="text-stone-500 text-sm mb-4">Tap a zone on the map or select from the list below</p>
@@ -173,7 +173,8 @@ export default function OnboardingPage() {
                   }))}
                   selectedZoneId={selectedZoneId}
                   onZoneClick={handleZoneSelect}
-                  height="220px"
+                  height="200px"
+                  mobileHeight="180px"
                 />
               </div>
 
@@ -205,7 +206,7 @@ export default function OnboardingPage() {
           {/* Step 3: Earnings + Premium Breakdown + Exclusions */}
           {step === 3 && selectedZone && (
             <div className="space-y-4">
-              <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
+              <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 sm:p-6">
                 <div className="text-4xl mb-4">💰</div>
                 <h2 className="text-stone-800 font-bold text-xl mb-1">Your weekly earnings?</h2>
                 <p className="text-stone-500 text-sm mb-5">Used to calculate your disruption day payout</p>
@@ -251,7 +252,7 @@ export default function OnboardingPage() {
 
           {/* Step 4: Success */}
           {step === 4 && selectedZone && (
-            <div className="bg-white rounded-2xl border border-emerald-200 shadow-sm p-8 text-center">
+            <div className="bg-white rounded-2xl border border-emerald-200 shadow-sm p-6 sm:p-8 text-center">
               <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
                 <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />

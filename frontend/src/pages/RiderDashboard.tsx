@@ -6,6 +6,7 @@ import WeekTimeline from '../components/Rider/WeekTimeline'
 import PolicyCard from '../components/Policy/PolicyCard'
 import CoverageCard from '../components/Rider/CoverageCard'
 import BengaluruZoneMap from '../components/Map/BengaluruZoneMap'
+import { QuadSignalWidget } from '../components/Signals'
 import type { PolicyData, ZoneSignalData, RawApiZone, RawApiPayout } from '../types'
 
 export default function RiderDashboard() {
@@ -15,7 +16,7 @@ export default function RiderDashboard() {
   const [payouts, setPayouts] = useState(PAYOUTS)
   const [signalData, setSignalData] = useState<ZoneSignalData | null>(null)
   const [zones, setZones] = useState<RawApiZone[]>([])
-  const [apiAvailable, setApiAvailable] = useState(false)
+  const [currentZoneId, setCurrentZoneId] = useState<string>('hsr')
 
   useEffect(() => {
     const init = async () => {
@@ -23,6 +24,8 @@ export default function RiderDashboard() {
         // Try loading rider from API — use localStorage if set by onboarding, else fall back to seeded rider
         const storedRiderId = localStorage.getItem('zoneguard_rider_id') || 'AMZFLEX-BLR-04821'
         const r = await getRider(storedRiderId)
+        const zoneId = r.zone_id || 'hsr'
+        setCurrentZoneId(zoneId)
         setRider({ ...RIDER, name: r.name, riderId: r.id, zone: ZONES[0], weeklyEarningsBaseline: r.weekly_earnings_baseline ?? RIDER.weeklyEarningsBaseline, tenureWeeks: r.tenure_weeks ?? RIDER.tenureWeeks })
 
         const policies = await getPolicies(r.id)
@@ -43,11 +46,8 @@ export default function RiderDashboard() {
 
         const signals = await getZoneSignals(r.zone_id || 'hsr')
         setSignalData(signals)
-
-        setApiAvailable(true)
       } catch {
-        // Fallback to mock data
-        setApiAvailable(false)
+        // Fallback to mock data — QuadSignalWidget will handle its own loading state
       }
     }
     init()
@@ -55,12 +55,6 @@ export default function RiderDashboard() {
 
   const totalEarned = RAVI_WEEK.reduce((s, d) => s + d.earnings, 0)
   const totalPayout = RAVI_WEEK.reduce((s, d) => s + (d.payoutAmount ?? 0), 0)
-
-  const signalStatus = signalData ? (
-    signalData.is_disrupted
-      ? `DISRUPTION — ${signalData.confidence} (${signalData.signals_fired}/4 signals)`
-      : 'Normal'
-  ) : 'Normal'
 
   const mapZones = (zones.length > 0 ? zones : ZONES as RawApiZone[]).map((z) => ({
     id: z.id, name: z.name, lat: z.lat || 12.9716, lng: z.lng || 77.5946,
@@ -86,7 +80,7 @@ export default function RiderDashboard() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <main className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4">
         {/* Policy card (API) or Coverage card (mock) */}
         {policy ? (
           <PolicyCard policy={policy} zoneName={rider.zone?.name || 'HSR Layout'} />
@@ -95,7 +89,7 @@ export default function RiderDashboard() {
         )}
 
         {/* Summary strip */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { label: 'Earned this week', value: `₹${totalEarned.toLocaleString()}`, highlight: false },
             { label: 'ZG paid out', value: `₹${totalPayout.toLocaleString()}`, highlight: true },
@@ -118,42 +112,38 @@ export default function RiderDashboard() {
             zones={mapZones}
             selectedZoneId={rider.zone?.id || 'hsr'}
             height="180px"
+            mobileHeight="160px"
             showPopups={false}
           />
         </div>
+
+        {/* QuadSignal Widget - Live signal status visualization */}
+        <QuadSignalWidget
+          zoneId={currentZoneId}
+          initialData={signalData}
+          refreshInterval={30000}
+        />
 
         {/* Week timeline */}
         <WeekTimeline week={RAVI_WEEK} />
 
         {/* Payout history */}
-        <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
-          <h2 className="text-stone-800 font-bold text-lg mb-4">Payout History</h2>
+        <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 sm:p-6">
+          <h2 className="text-stone-800 font-bold text-base sm:text-lg mb-3 sm:mb-4">Payout History</h2>
           <div className="space-y-2.5">
             {payouts.map((p, i) => (
-              <div key={p.id} className={`flex items-center justify-between p-3.5 rounded-xl border ${i === 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-stone-50 border-stone-100'}`}>
-                <div>
-                  <p className="text-stone-800 font-semibold text-sm">{p.trigger}</p>
-                  <p className="text-stone-500 text-xs mt-0.5">{p.date} · Ref: {p.upiRef}</p>
+              <div key={p.id} className={`flex items-center justify-between p-3 sm:p-3.5 rounded-xl border ${i === 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-stone-50 border-stone-100'}`}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-stone-800 font-semibold text-sm truncate">{p.trigger}</p>
+                  <p className="text-stone-500 text-xs mt-0.5 truncate">{p.date} · Ref: {p.upiRef}</p>
                 </div>
-                <div className="text-right">
+                <div className="text-right ml-3 flex-shrink-0">
                   <p className={`font-bold text-sm ${i === 0 ? 'text-emerald-600' : 'text-stone-700'}`}>+₹{p.amount.toLocaleString()}</p>
                   <span className={`text-xs px-1.5 py-0.5 rounded-full ${p.confidence === 'HIGH' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{p.confidence}</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Zone signal status */}
-        <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-xl">📡</div>
-            <div>
-              <p className="text-stone-800 font-semibold text-sm">Zone Signals: {signalStatus}</p>
-              <p className="text-stone-500 text-xs">All 4 signals monitored · {apiAvailable ? 'Live' : 'Demo mode'}</p>
-            </div>
-          </div>
-          <div className={`w-2.5 h-2.5 rounded-full ${signalData?.is_disrupted ? 'bg-red-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}`} />
         </div>
 
         <div className="text-center pb-4">

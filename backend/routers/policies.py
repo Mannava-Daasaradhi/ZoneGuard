@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from db.database import get_db
 from models.policy import Policy, PolicyAppliedExclusion, PolicyExclusionType
+from models.premium_payment import PremiumPayment
 from models.zone import Zone
 from models.rider import Rider
 from schemas.policy import PolicyCreate, PolicyResponse, ExclusionResponse
@@ -65,6 +66,21 @@ async def create_policy(payload: PolicyCreate, db: AsyncSession = Depends(get_db
             exclusion_type_id=excl["id"],
         )
         db.add(applied)
+
+    # Create premium payment record for the policy
+    premium_payment = PremiumPayment(
+        id=str(uuid.uuid4()),
+        rider_id=policy.rider_id,
+        policy_id=policy.id,
+        amount=policy.weekly_premium,
+        week_start=policy.coverage_start.date(),
+        week_end=policy.coverage_end.date(),
+        status="paid",
+        payment_method="UPI",
+        transaction_ref=f"ZG-PREM-{uuid.uuid4().hex[:8].upper()}",
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(premium_payment)
 
     await db.commit()
     await db.refresh(policy)
@@ -149,6 +165,23 @@ async def renew_policy(policy_id: str, db: AsyncSession = Depends(get_db)):
         forward_lock_weeks=max(0, old_policy.forward_lock_weeks - 1),
     )
     db.add(new_policy)
+    await db.flush()
+
+    # Create premium payment record for the renewed policy
+    premium_payment = PremiumPayment(
+        id=str(uuid.uuid4()),
+        rider_id=new_policy.rider_id,
+        policy_id=new_policy.id,
+        amount=new_policy.weekly_premium,
+        week_start=new_policy.coverage_start.date(),
+        week_end=new_policy.coverage_end.date(),
+        status="paid",
+        payment_method="UPI",
+        transaction_ref=f"ZG-PREM-{uuid.uuid4().hex[:8].upper()}",
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(premium_payment)
+
     await db.commit()
 
     return {"old_policy_id": policy_id, "new_policy": PolicyResponse.model_validate(new_policy)}

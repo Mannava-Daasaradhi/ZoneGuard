@@ -1,21 +1,130 @@
 # ZoneGuard
 ### AI-Powered Parametric Income Protection for Amazon Flex Last-Mile Riders
 
-**Guidewire DEVTrails 2026 — Phase 1 Final Submission**
+**Guidewire DEVTrails 2026 — Phase 2 Complete · Working Prototype**
 
 > *"A flash flood doesn't wait for a claims adjuster. Neither should a delivery rider's rent."*
 
-![Phase](https://img.shields.io/badge/Phase-1%20Final%20Submission-blue)
+![Phase](https://img.shields.io/badge/Phase-2%20Complete-brightgreen)
+![Build](https://img.shields.io/badge/Build-Passing-brightgreen)
+![Backend](https://img.shields.io/badge/Backend-FastAPI%20Python-blue)
+![Frontend](https://img.shields.io/badge/Frontend-React%2019%20TypeScript-61dafb)
+![ML](https://img.shields.io/badge/ML-QuadSignal%20Fusion-purple)
+![LLM](https://img.shields.io/badge/LLM-Gemini%201.5%20Flash-orange)
 ![Persona](https://img.shields.io/badge/Persona-Amazon%20Flex%20E--Commerce-green)
 ![Premium](https://img.shields.io/badge/Weekly%20Premium-₹39–₹225-purple)
 ![Payout](https://img.shields.io/badge/Payout%20Window-Under%202%20Hours-orange)
-![Onboarding](https://img.shields.io/badge/Onboarding-WhatsApp%20Native%2090s-yellow)
 ![Hackathon](https://img.shields.io/badge/Guidewire-DEVTrails%202026-red)
+
+**Live Demo:** https://zenith-tribe.github.io/ZoneGuard/ · **Repo:** https://github.com/Zenith-Tribe/ZoneGuard
+
+---
+
+## Phase 2 — Working Prototype
+
+### Quick Start (Full Stack in 3 Commands)
+
+```bash
+git clone https://github.com/Zenith-Tribe/ZoneGuard && cd ZoneGuard
+cp backend/.env.example backend/.env   # optionally add GEMINI_API_KEY, OPENWEATHERMAP_API_KEY
+docker compose up --build              # starts frontend :5173, backend :8000, PostgreSQL, Redis
+# In a second terminal (one-time seed):
+docker compose exec backend python db/seed.py
+```
+Open **http://localhost:5173** → ZoneGuard is live.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Browser  →  React 19 + TypeScript + Tailwind + Recharts   │
+│              nginx (Docker :5173) — SPA + /api/ proxy       │
+└─────────────────┬───────────────────────────────────────────┘
+                  │ HTTP /api/v1/
+┌─────────────────▼───────────────────────────────────────────┐
+│  FastAPI Backend (:8000) — 9 routers, 11 ORM models        │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  ML Pipeline                                         │   │
+│  │  ZoneRisk Scorer → QuadSignal Fusion → FraudShield  │   │
+│  │  ZoneTwin Counterfactual · Gemini LLM Audit Reports │   │
+│  └──────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Integrations                                        │   │
+│  │  OpenWeatherMap (live) · OSRM mock · UPI mock       │   │
+│  │  WhatsApp sim · Gemini 1.5 Flash                    │   │
+│  └──────────────────────────────────────────────────────┘   │
+└────────────┬─────────────────┬───────────────────────────────┘
+             │                 │
+      PostgreSQL 16       Redis 7
+      (11 tables)     (signal cache)
+```
+
+### 8-Step Demo Flow (Judge Walkthrough)
+
+| Step | Action | What You See |
+|------|---------|-------------|
+| 1 | Open http://localhost:5173 | Landing page — ZoneGuard pitch |
+| 2 | "Get Covered" → Onboarding | 3-step: Rider ID → Zone → Earnings |
+| 3 | Confirm policy | Rider Dashboard — ₹49/week active coverage |
+| 4 | Admin Dashboard → Disruption Simulator | Select HSR Layout → "Flash Flood" |
+| 5 | Trigger simulation | QuadSignal panel: S1+S2+S3+S4 all fire → HIGH confidence |
+| 6 | Claims Queue | Auto-created claim — Exclusion check PASSED — FraudShield 12% risk |
+| 7 | Approve payout | UPI ref ZG-2026-XXXXXXXX generated — ₹1,650 disbursed |
+| 8 | KPIs update | Total payouts ↑, Loss ratio ↑, Active claims ↓ |
+
+### Phase 2 Deliverables Checklist
+
+- [x] **Working registration** — 90-second onboarding, Rider ID + Zone + Earnings
+- [x] **Policy management** — create / view / renew / cancel with exclusions list
+- [x] **Dynamic weekly premium calculator** — ZoneRisk Scorer (5-factor weighted ML)
+- [x] **Claims management** — auto-trigger + manual review queue + Gemini AI audit
+- [x] **4 automated disruption triggers** — flash_flood, severe_aqi, transport_strike, heat_wave
+- [x] **Payout simulation** — UPI mock (ZG-2026-XXXXXXXX), 75% of 7-day earnings baseline
+- [x] **Analytics dashboard** — KPIs, QuadSignal live feed, loss ratio, claims charts
+- [x] **10 standard exclusions** — War, Pandemic, Terrorism, Rider Misconduct, Vehicle Defect, Pre-existing Zone, Scheduled Maintenance, Grace Period Lapse, Fraud Detected, Max Days Exceeded
+- [x] **Intelligent fraud detection** — FraudShield heuristic scorer (duplicate/velocity/timing checks)
+- [x] **LLM audit reports** — Gemini 1.5 Flash with graceful template fallback
+- [x] **Docker Compose full stack** — 4 services (frontend nginx, backend, PostgreSQL 16, Redis 7)
+- [x] **GitHub Actions CI** — lint + build (frontend) + app load verify (backend)
+
+### Key API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/riders/register` | Register new rider |
+| POST | `/api/v1/policies` | Create policy |
+| GET | `/api/v1/premium/calculate?zone_id=hsr` | Dynamic premium breakdown |
+| POST | `/api/v1/simulator/trigger` | Fire disruption scenario |
+| GET | `/api/v1/signals/active-events` | Live signal feed |
+| GET | `/api/v1/claims?status=pending_review` | Claims queue |
+| POST | `/api/v1/claims/{id}/review` | Approve / reject claim |
+| GET | `/api/v1/payouts?rider_id=X` | Payout history |
+| GET | `/api/v1/admin/kpis` | Dashboard KPIs |
+| GET | `/health` | Health check |
+
+Full Swagger docs: http://localhost:8000/docs
+
+### Business Rules (Critical Constraints from DEVTrails PDF)
+
+- **Income loss ONLY** — strictly excludes health, life, accidents, vehicle repair (10 hard exclusions enforced)
+- **Weekly pricing** — ₹39–₹225/week based on zone risk tier (Low / Medium / High / Flood-Prone)
+- **Payout = 75%** of 7-day rolling earnings baseline (25% retained for moral hazard)
+- **4-signal convergence required** — S1 Environmental + S2 Mobility + S3 Economic + S4 Crowd
+- **Confidence gating** — HIGH (4 signals) = auto-payout; MEDIUM (3) = recheck; LOW (2) = review
+- **Max 3 consecutive disruption days** per week covered
+
+### Deployment
+
+See [DEPLOY.md](DEPLOY.md) for:
+- Option A: Local dev (DB/Redis in Docker, backend native — recommended for demo)
+- Option B: Railway (backend) + GitHub Pages (frontend) — production setup
+- Option C: Full Docker Compose
 
 ---
 
 ## Table of Contents
 
+0. [Phase 2 — Working Prototype](#phase-2--working-prototype) ← **Start Here**
 1. [The Problem We Are Solving](#1-the-problem-we-are-solving)
 2. [ZoneGuard Platform Overview](#2-zoneguard-platform-overview)
 3. [Persona: Why Amazon Flex](#3-persona-why-amazon-flex-e-commerce)

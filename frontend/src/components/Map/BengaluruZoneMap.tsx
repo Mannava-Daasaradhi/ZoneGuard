@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, Circle, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { ZoneSignalData } from '../../types'
 
 interface ZoneMapData {
@@ -21,6 +21,7 @@ interface Props {
   onZoneClick?: (zoneId: string) => void
   selectedZoneId?: string
   height?: string
+  mobileHeight?: string
   showPopups?: boolean
   signalData?: Record<string, ZoneSignalData>
 }
@@ -65,16 +66,37 @@ export default function BengaluruZoneMap({
   onZoneClick,
   selectedZoneId,
   height = '400px',
+  mobileHeight,
   showPopups = true,
   signalData,
 }: Props) {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const effectiveHeight = isMobile && mobileHeight ? mobileHeight : height
+  // Ensure minimum height of 200px on mobile
+  const minHeight = isMobile ? '200px' : undefined
+
   return (
     <MapContainer
       center={[12.9716, 77.5946]}
       zoom={11}
-      style={{ height, width: '100%', borderRadius: '12px' }}
+      style={{ 
+        height: effectiveHeight, 
+        minHeight,
+        width: '100%', 
+        borderRadius: '12px',
+        touchAction: 'pan-x pan-y'  // Better touch handling
+      }}
       scrollWheelZoom={true}
       zoomControl={true}
+      dragging={true}
     >
       <TileLayer
         attribution='&copy; <a href="https://carto.com">CARTO</a>'
@@ -105,14 +127,14 @@ export default function BengaluruZoneMap({
           >
             {showPopups && (
               <Popup>
-                <div style={{ minWidth: '180px' }}>
-                  <strong style={{ fontSize: '14px' }}>{zone.name}</strong>
-                  <div style={{ fontSize: '12px', marginTop: '4px', color: '#666' }}>
+                <div style={{ minWidth: '160px', maxWidth: '220px' }}>
+                  <strong style={{ fontSize: '14px', display: 'block', marginBottom: '4px' }}>{zone.name}</strong>
+                  <div style={{ fontSize: '12px', color: '#666' }}>
                     <div>Risk Score: <b>{zone.riskScore}/100</b></div>
                     <div>Premium: <b>₹{zone.weeklyPremium}/wk</b></div>
                     <div>Active Riders: <b>{zone.activeRiders}</b></div>
                     {isDisrupted && (
-                      <div style={{ color: '#ef4444', fontWeight: 'bold', marginTop: '4px' }}>
+                      <div style={{ color: '#ef4444', fontWeight: 'bold', marginTop: '4px', fontSize: '11px' }}>
                         ⚠ DISRUPTION ACTIVE — {signal?.confidence}
                       </div>
                     )}

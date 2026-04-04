@@ -64,18 +64,18 @@ export default function QuadSignalPanel() {
   useEffect(() => () => { timers.current.forEach(clearTimeout) }, [])
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-5">
       {/* Header */}
-      <div className="flex items-start justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0 mb-4 sm:mb-5">
         <div>
-          <h2 className="text-white font-bold text-lg">QuadSignal Fusion Engine</h2>
+          <h2 className="text-white font-bold text-base sm:text-lg">QuadSignal Fusion Engine</h2>
           <p className="text-slate-400 text-xs">HSR Layout · 2-hour rolling window · 15-min refresh</p>
         </div>
         <div className="flex gap-2">
           {!isDemoRunning && !payoutFired && (
             <button
               onClick={runDemo}
-              className="bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors shadow-lg shadow-amber-500/20"
+              className="bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs px-3 sm:px-4 py-2 rounded-lg transition-colors shadow-lg shadow-amber-500/20"
             >
               ▶ TRIGGER DEMO
             </button>
@@ -83,7 +83,7 @@ export default function QuadSignalPanel() {
           {(isDemoRunning || payoutFired) && (
             <button
               onClick={reset}
-              className="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2 rounded-lg transition-colors"
+              className="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-3 sm:px-4 py-2 rounded-lg transition-colors"
             >
               Reset
             </button>
@@ -92,7 +92,7 @@ export default function QuadSignalPanel() {
       </div>
 
       {/* Signal cards */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4">
         {signals.map((sig) => (
           <div
             key={sig.id}
@@ -102,7 +102,7 @@ export default function QuadSignalPanel() {
                 : 'bg-slate-900 border-slate-700'
             }`}
           >
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
               <span className="text-slate-400 text-xs font-bold tracking-wide">{sig.id}</span>
               <div className={`w-2.5 h-2.5 rounded-full transition-colors duration-500 ${
                 sig.status === 'firing' ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'
@@ -113,42 +113,42 @@ export default function QuadSignalPanel() {
             }`}>
               {sig.name}
             </p>
-            <p className="text-slate-500 text-xs mb-2">{sig.description}</p>
-            <div className="border-t border-slate-700/50 pt-2">
-              <p className={`text-xs transition-colors duration-500 ${
+            <p className="text-slate-500 text-xs mb-1.5 sm:mb-2 line-clamp-2">{sig.description}</p>
+            <div className="border-t border-slate-700/50 pt-1.5 sm:pt-2">
+              <p className={`text-xs transition-colors duration-500 truncate ${
                 sig.status === 'firing' ? 'text-amber-400 font-medium' : 'text-slate-400'
               }`}>
                 {sig.value}
               </p>
-              <p className="text-slate-600 text-xs">Threshold: {sig.threshold}</p>
+              <p className="text-slate-600 text-xs truncate">Threshold: {sig.threshold}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Confidence indicator */}
-      <div className={`border rounded-xl px-4 py-3 flex items-center justify-between transition-all duration-700 ${cfg.bg} ${cfg.border}`}>
-        <div>
+      <div className={`border rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between transition-all duration-700 ${cfg.bg} ${cfg.border}`}>
+        <div className="min-w-0 flex-1">
           <p className={`font-bold text-sm ${cfg.text}`}>
             {firedCount}/4 signals · Confidence: {confidence}
           </p>
-          <p className={`text-xs mt-0.5 opacity-70 ${cfg.text}`}>{cfg.label}</p>
+          <p className={`text-xs mt-0.5 opacity-70 ${cfg.text} truncate`}>{cfg.label}</p>
         </div>
-        <span className="text-2xl">
+        <span className="text-xl sm:text-2xl flex-shrink-0 ml-2">
           {firedCount === 4 ? '⚡' : firedCount >= 3 ? '⚠️' : firedCount >= 2 ? '🔍' : '📡'}
         </span>
       </div>
 
       {/* AUTO-PAYOUT banner */}
       {payoutFired && (
-        <div className="mt-4 bg-emerald-500/15 border border-emerald-400/60 rounded-xl p-4 flex items-center justify-between">
-          <div>
+        <div className="mt-4 bg-emerald-500/15 border border-emerald-400/60 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+          <div className="min-w-0">
             <p className="text-emerald-400 font-bold text-sm">⚡ AUTO-PAYOUT TRIGGERED</p>
-            <p className="text-emerald-300 text-xs mt-1">
+            <p className="text-emerald-300 text-xs mt-1 line-clamp-2 sm:line-clamp-none">
               142 riders · HSR Layout · ₹1,950 each · Total: ₹2,76,900 · Disbursing via UPI...
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-left sm:text-right flex-shrink-0">
             <p className="text-emerald-400 font-bold text-lg">₹2.77L</p>
             <p className="text-emerald-500 text-xs">processing</p>
           </div>

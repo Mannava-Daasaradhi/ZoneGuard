@@ -106,7 +106,7 @@ export default function PolicyPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+      <main className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-5">
         {/* Policy Card */}
         {policy && (
           <PolicyCard
@@ -124,9 +124,9 @@ export default function PolicyPage() {
         )}
 
         {/* Coverage terms */}
-        <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
-          <h2 className="text-stone-800 font-bold text-lg mb-4">Coverage Terms</h2>
-          <div className="space-y-3">
+        <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 sm:p-6">
+          <h2 className="text-stone-800 font-bold text-base sm:text-lg mb-3 sm:mb-4">Coverage Terms</h2>
+          <div className="space-y-2 sm:space-y-3">
             {[
               ['Payout calculation', '75% of 7-day average daily earnings'],
               ['Max consecutive days', '3 disruption days per week'],
@@ -136,9 +136,9 @@ export default function PolicyPage() {
               ['NDMA flood alerts', 'Pre-validated Signal 1 — no further confirmation needed'],
               ['Income cap', '7-day rolling average baseline (never theoretical max)'],
             ].map(([label, value]) => (
-              <div key={label} className="flex justify-between py-2 border-b border-stone-50 last:border-0">
+              <div key={label} className="flex flex-col sm:flex-row sm:justify-between py-2 border-b border-stone-50 last:border-0 gap-0.5 sm:gap-2">
                 <span className="text-stone-500 text-sm">{label}</span>
-                <span className="text-stone-800 font-medium text-sm text-right max-w-[60%]">{value}</span>
+                <span className="text-stone-800 font-medium text-sm sm:text-right sm:max-w-[60%]">{value}</span>
               </div>
             ))}
           </div>
@@ -148,11 +148,11 @@ export default function PolicyPage() {
         {premiumData && <PremiumBreakdown data={premiumData} />}
 
         {/* Forward Premium Lock */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4 sm:p-6">
           <div className="flex items-center gap-3 mb-3">
             <span className="text-2xl">🔒</span>
             <div>
-              <h3 className="text-stone-800 font-bold text-base">Forward Premium Lock</h3>
+              <h3 className="text-stone-800 font-bold text-sm sm:text-base">Forward Premium Lock</h3>
               <p className="text-stone-500 text-xs">Commit to 4 weeks, save 8% on every premium</p>
             </div>
           </div>
@@ -174,9 +174,9 @@ export default function PolicyPage() {
         </div>
 
         {/* Exclusions */}
-        <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-6">
-          <h2 className="text-stone-800 font-bold text-lg mb-1">Coverage Exclusions</h2>
-          <p className="text-stone-500 text-xs mb-4">10 standard exclusions attached to every policy</p>
+        <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 sm:p-6">
+          <h2 className="text-stone-800 font-bold text-base sm:text-lg mb-1">Coverage Exclusions</h2>
+          <p className="text-stone-500 text-xs mb-3 sm:mb-4">10 standard exclusions attached to every policy</p>
           <ExclusionsList exclusions={exclusions} />
         </div>
 

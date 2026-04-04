@@ -18,30 +18,30 @@ export default function LandingPage() {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="relative z-10 text-center mb-12">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="relative z-10 text-center mb-8 sm:mb-12 px-2">
+        <div className="flex items-center justify-center gap-3 mb-4 sm:mb-6">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+            <svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">ZoneGuard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">ZoneGuard</h1>
         </div>
-        <p className="text-slate-300 text-lg max-w-md mx-auto leading-relaxed">
+        <p className="text-slate-300 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
           When the zone goes dark,{' '}
           <span className="text-amber-400 font-semibold">your income doesn't have to.</span>
         </p>
-        <p className="text-slate-500 text-sm mt-3">
+        <p className="text-slate-500 text-xs sm:text-sm mt-2 sm:mt-3">
           AI-powered parametric income protection for Amazon Flex riders · Bengaluru
         </p>
       </div>
 
       {/* Persona cards */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-2xl">
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 w-full max-w-2xl">
         {/* Rider card */}
         <button
           onClick={() => navigate('/rider')}
-          className="group bg-amber-500/10 border border-amber-500/30 rounded-2xl p-8 text-left hover:bg-amber-500/20 hover:border-amber-400 transition-all duration-200 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 active:translate-y-0"
+          className="group bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 sm:p-8 text-left hover:bg-amber-500/20 hover:border-amber-400 transition-all duration-200 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 active:translate-y-0"
         >
           <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4 group-hover:bg-amber-500/30 transition-colors text-2xl">
             🛵
@@ -61,7 +61,7 @@ export default function LandingPage() {
         {/* Insurer card */}
         <button
           onClick={() => navigate('/admin')}
-          className="group bg-blue-500/10 border border-blue-500/30 rounded-2xl p-8 text-left hover:bg-blue-500/20 hover:border-blue-400 transition-all duration-200 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 active:translate-y-0"
+          className="group bg-blue-500/10 border border-blue-500/30 rounded-2xl p-6 sm:p-8 text-left hover:bg-blue-500/20 hover:border-blue-400 transition-all duration-200 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 active:translate-y-0"
         >
           <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 group-hover:bg-blue-500/30 transition-colors text-2xl">
             📊
@@ -80,14 +80,14 @@ export default function LandingPage() {
       </div>
 
       {/* Stats strip */}
-      <div className="relative z-10 mt-10 flex items-center gap-8 text-center">
+      <div className="relative z-10 mt-10 grid grid-cols-2 sm:flex sm:items-center gap-4 sm:gap-8 text-center w-full max-w-2xl px-4 sm:px-0">
         {[
           ['1,624', 'Active policies'],
           ['10', 'Zones monitored'],
           ['< 2 hrs', 'Avg payout time'],
           ['₹29–₹99', 'Weekly premiums'],
         ].map(([val, label]) => (
-          <div key={label}>
+          <div key={label} className="bg-white/5 rounded-xl p-3 sm:bg-transparent sm:p-0">
             <p className="text-white font-bold text-lg">{val}</p>
             <p className="text-slate-500 text-xs">{label}</p>
           </div>
