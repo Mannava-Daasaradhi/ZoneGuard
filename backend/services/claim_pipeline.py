@@ -68,9 +68,9 @@ async def process_disruption_event(
     # Step 5: Process claims for each eligible rider
     claims = []
     for rider in riders_with_policies:
-        # Calculate payout (75% of 7-day daily average)
+        # Calculate payout (55% of 7-day daily average)
         daily_avg = rider.get("weekly_earnings_baseline", 2000) / 7
-        payout_amount = round(daily_avg * 0.75)
+        payout_amount = round(daily_avg * 0.55)
 
         # Fraud check
         fraud = calculate_fraud_score(

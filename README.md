@@ -79,7 +79,7 @@ Open **http://localhost:5173** → ZoneGuard is live.
 - [x] **Dynamic weekly premium calculator** — ZoneRisk Scorer (5-factor weighted ML)
 - [x] **Claims management** — auto-trigger + manual review queue + Gemini AI audit
 - [x] **4 automated disruption triggers** — flash_flood, severe_aqi, transport_strike, heat_wave
-- [x] **Payout simulation** — UPI mock (ZG-2026-XXXXXXXX), 75% of 7-day earnings baseline
+- [x] **Payout simulation** — UPI mock (ZG-2026-XXXXXXXX), 55% of 7-day earnings baseline
 - [x] **Analytics dashboard** — KPIs, QuadSignal live feed, loss ratio, claims charts
 - [x] **10 standard exclusions** — War, Pandemic, Terrorism, Rider Misconduct, Vehicle Defect, Pre-existing Zone, Scheduled Maintenance, Grace Period Lapse, Fraud Detected, Max Days Exceeded
 - [x] **Intelligent fraud detection** — FraudShield heuristic scorer (duplicate/velocity/timing checks)
@@ -108,7 +108,7 @@ Full Swagger docs: http://localhost:8000/docs
 
 - **Income loss ONLY** — strictly excludes health, life, accidents, vehicle repair (10 hard exclusions enforced)
 - **Weekly pricing** — ₹39–₹225/week based on zone risk tier (Low / Medium / High / Flood-Prone)
-- **Payout = 75%** of 7-day rolling earnings baseline (25% retained for moral hazard)
+- **Payout = 55%** of 7-day rolling earnings baseline (25% retained for moral hazard)
 - **4-signal convergence required** — S1 Environmental + S2 Mobility + S3 Economic + S4 Crowd
 - **Confidence gating** — HIGH (4 signals) = auto-payout; MEDIUM (3) = recheck; LOW (2) = review
 - **Max 3 consecutive disruption days** per week covered
@@ -937,9 +937,9 @@ The table below maps each official DEVTrails 2026 deliverable expectation to the
 |------------------------|-------------------|-------------------|
 | **Optimized onboarding for your delivery persona** | WhatsApp-native 90-second conversational flow — 3 messages, no forms, no app download. Flex Rider ID-based identity, instant policy activation. | [Section 5](#5-whatsapp-native-onboarding) |
 | **Risk profiling using AI/ML** | ZoneRisk Scorer (XGBoost, Monday recalculation), ZoneTwin digital simulation (per-zone counterfactuals + seasonal forecasting), FraudShield Isolation Forest (anomaly detection on claim patterns). | [Section 9](#9-aiml-architecture) |
-| **Policy creation with appropriate pricing structured on a Weekly basis** | Zone-specific weekly premiums ₹39–₹225 derived from XGBoost risk scoring. Monday recalculation. Forward Premium Lock (4-week, 8% discount). Payout = 75% of 7-day rolling average earnings. | [Section 6](#6-weekly-premium-model) |
+| **Policy creation with appropriate pricing structured on a Weekly basis** | Zone-specific weekly premiums ₹39–₹225 derived from XGBoost risk scoring. Monday recalculation. Forward Premium Lock (4-week, 8% discount). Payout = 55% of 7-day rolling average earnings. | [Section 6](#6-weekly-premium-model) |
 | **Claim triggering through relevant parametric events (loss of income triggers only)** | QuadSignal convergence across 6 defined triggers (ENV-01 through SOC-02). All triggers are income-loss-only. Health, life, accidents, and vehicle repairs are structurally excluded. | [Sections 7–8](#7-quadsignal-fusion-engine-the-core-innovation) |
-| **Payout processing via appropriate channels** | Razorpay test-mode UPI simulation. Auto-payout within 2 hours on HIGH confidence. Payout capped at 75% of 7-day earnings baseline. Zero rider action required. | [Sections 6, 14](#6-weekly-premium-model) |
+| **Payout processing via appropriate channels** | Razorpay test-mode UPI simulation. Auto-payout within 2 hours on HIGH confidence. Payout capped at 55% of 7-day earnings baseline. Zero rider action required. | [Sections 6, 14](#6-weekly-premium-model) |
 | **Analytics dashboard showing relevant metrics** | Rider Analytics Dashboard (earnings protected, payout history, zone risk, coverage card) + Insurer Admin Analytics Dashboard (zone risk heatmaps, loss ratios, QuadSignal log, disruption alerts, FraudShield queue). | [Section 17 — Phase 3](#17-development-roadmap-6-weeks) |
 
 ---

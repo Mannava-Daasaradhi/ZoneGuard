@@ -7,7 +7,7 @@ the full QuadSignal → Claim → Payout pipeline in real-time.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from db.database import get_db
 from models.zone import Zone
 from models.simulation import SimulationEvent
@@ -25,7 +25,7 @@ from integrations.gemini import generate_audit_report
 from integrations.payout_sim import process_payout
 from routers.zones import update_signal_cache
 from pydantic import BaseModel
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 
 router = APIRouter(prefix="/api/v1/simulator", tags=["simulator"])
@@ -144,9 +144,24 @@ async def trigger_disruption(payload: SimulatorTrigger, db: AsyncSession = Depen
     claims_created = []
     payouts_created = []
 
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+
     for rider, policy in riders_policies:
+        # Idempotency: skip if rider already has a non-rejected claim in this zone within 24h
+        existing_claim = await db.execute(
+            select(Claim)
+            .where(and_(
+                Claim.rider_id == rider.id,
+                Claim.zone_id == payload.zone_id,
+                Claim.status.in_(["approved", "pending_review", "held"]),
+                Claim.created_at >= cutoff,
+            ))
+        )
+        if existing_claim.scalars().first():
+            continue
+
         daily_avg = (rider.weekly_earnings_baseline or 2000) / 7
-        payout_amount = round(daily_avg * 0.75)
+        payout_amount = round(daily_avg * 0.55)
 
         # Fraud check
         fraud = calculate_fraud_score(

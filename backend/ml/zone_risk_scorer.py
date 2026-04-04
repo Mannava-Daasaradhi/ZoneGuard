@@ -8,14 +8,14 @@ ZoneRisk Scorer — Weighted rule-based risk model.
 - zone_class (15%): zone classification risk level
 - claim_history (10%): recent claim volume for the zone
 
-Output: risk score 0-100 → premium tier (₹29/₹49/₹69/₹99)
+Output: risk score 0-100 → premium tier (₹39/₹89/₹139/₹225)
 """
 
 PREMIUM_TIERS = {
-    (0, 30): {"premium": 29, "tier": "low", "max_payout": 1800},
-    (30, 55): {"premium": 49, "tier": "medium", "max_payout": 2200},
-    (55, 75): {"premium": 69, "tier": "high", "max_payout": 2800},
-    (75, 101): {"premium": 99, "tier": "flood-prone", "max_payout": 3500},
+    (0, 30): {"premium": 39, "tier": "low", "max_payout": 1430},
+    (30, 55): {"premium": 89, "tier": "medium", "max_payout": 4290},
+    (55, 75): {"premium": 139, "tier": "high", "max_payout": 7150},
+    (75, 101): {"premium": 225, "tier": "flood-prone", "max_payout": 11440},
 }
 
 # Zone classification base scores
