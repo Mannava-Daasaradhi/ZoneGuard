@@ -54,6 +54,14 @@ async def seed():
     print("Tables created.")
 
     async with async_session() as session:
+        # Check if already seeded
+        from sqlalchemy import select, func
+        result = await session.execute(select(func.count(Zone.id)))
+        zone_count = result.scalar()
+        if zone_count > 0:
+            print(f"Database already seeded ({zone_count} zones found). Skipping.")
+            return
+
         # Seed zones — flush immediately so FK constraints work
         print("Seeding zones...")
         for z in ZONES:
