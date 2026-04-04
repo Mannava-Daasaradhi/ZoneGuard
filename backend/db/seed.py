@@ -26,16 +26,18 @@ import uuid
 
 
 ZONES = [
-    {"id": "hsr", "name": "HSR Layout", "pin_code": "560102", "lat": 12.9116, "lng": 77.6389, "risk_tier": "medium", "risk_score": 58, "weekly_premium": 49, "max_weekly_payout": 2200, "active_riders": 142, "historical_disruptions": 3},
-    {"id": "koramangala", "name": "Koramangala", "pin_code": "560034", "lat": 12.9352, "lng": 77.6245, "risk_tier": "medium", "risk_score": 54, "weekly_premium": 49, "max_weekly_payout": 2200, "active_riders": 198, "historical_disruptions": 3},
-    {"id": "whitefield", "name": "Whitefield", "pin_code": "560066", "lat": 12.9698, "lng": 77.7500, "risk_tier": "low", "risk_score": 22, "weekly_premium": 29, "max_weekly_payout": 1800, "active_riders": 215, "historical_disruptions": 1},
-    {"id": "indiranagar", "name": "Indiranagar", "pin_code": "560038", "lat": 12.9784, "lng": 77.6408, "risk_tier": "medium", "risk_score": 61, "weekly_premium": 49, "max_weekly_payout": 2200, "active_riders": 167, "historical_disruptions": 3},
-    {"id": "electronic-city", "name": "Electronic City", "pin_code": "560100", "lat": 12.8399, "lng": 77.6770, "risk_tier": "low", "risk_score": 31, "weekly_premium": 29, "max_weekly_payout": 1800, "active_riders": 289, "historical_disruptions": 1},
-    {"id": "bellandur", "name": "Bellandur", "pin_code": "560103", "lat": 12.9256, "lng": 77.6780, "risk_tier": "flood-prone", "risk_score": 87, "weekly_premium": 99, "max_weekly_payout": 3500, "active_riders": 94, "historical_disruptions": 8},
-    {"id": "btm-layout", "name": "BTM Layout", "pin_code": "560076", "lat": 12.9166, "lng": 77.6101, "risk_tier": "high", "risk_score": 72, "weekly_premium": 69, "max_weekly_payout": 2800, "active_riders": 131, "historical_disruptions": 5},
-    {"id": "jp-nagar", "name": "JP Nagar", "pin_code": "560078", "lat": 12.9063, "lng": 77.5857, "risk_tier": "high", "risk_score": 68, "weekly_premium": 69, "max_weekly_payout": 2800, "active_riders": 112, "historical_disruptions": 5},
-    {"id": "yelahanka", "name": "Yelahanka", "pin_code": "560064", "lat": 13.1007, "lng": 77.5963, "risk_tier": "low", "risk_score": 19, "weekly_premium": 29, "max_weekly_payout": 1800, "active_riders": 178, "historical_disruptions": 1},
-    {"id": "hebbal", "name": "Hebbal", "pin_code": "560024", "lat": 13.0358, "lng": 77.5970, "risk_tier": "high", "risk_score": 74, "weekly_premium": 69, "max_weekly_payout": 2800, "active_riders": 103, "historical_disruptions": 5},
+    # risk_score must be in correct tier range: low<30, medium 30-54, high 55-74, flood-prone 75+
+    # weekly_premium and max_weekly_payout must match zone_risk_scorer.py PREMIUM_TIERS
+    {"id": "hsr", "name": "HSR Layout", "pin_code": "560102", "lat": 12.9116, "lng": 77.6389, "risk_tier": "medium", "risk_score": 45, "weekly_premium": 89, "max_weekly_payout": 4290, "active_riders": 142, "historical_disruptions": 3},
+    {"id": "koramangala", "name": "Koramangala", "pin_code": "560034", "lat": 12.9352, "lng": 77.6245, "risk_tier": "medium", "risk_score": 48, "weekly_premium": 89, "max_weekly_payout": 4290, "active_riders": 198, "historical_disruptions": 3},
+    {"id": "whitefield", "name": "Whitefield", "pin_code": "560066", "lat": 12.9698, "lng": 77.7500, "risk_tier": "low", "risk_score": 22, "weekly_premium": 39, "max_weekly_payout": 1430, "active_riders": 215, "historical_disruptions": 1},
+    {"id": "indiranagar", "name": "Indiranagar", "pin_code": "560038", "lat": 12.9784, "lng": 77.6408, "risk_tier": "medium", "risk_score": 50, "weekly_premium": 89, "max_weekly_payout": 4290, "active_riders": 167, "historical_disruptions": 3},
+    {"id": "electronic-city", "name": "Electronic City", "pin_code": "560100", "lat": 12.8399, "lng": 77.6770, "risk_tier": "low", "risk_score": 24, "weekly_premium": 39, "max_weekly_payout": 1430, "active_riders": 289, "historical_disruptions": 1},
+    {"id": "bellandur", "name": "Bellandur", "pin_code": "560103", "lat": 12.9256, "lng": 77.6780, "risk_tier": "flood-prone", "risk_score": 87, "weekly_premium": 225, "max_weekly_payout": 11440, "active_riders": 94, "historical_disruptions": 8},
+    {"id": "btm-layout", "name": "BTM Layout", "pin_code": "560076", "lat": 12.9166, "lng": 77.6101, "risk_tier": "high", "risk_score": 68, "weekly_premium": 139, "max_weekly_payout": 7150, "active_riders": 131, "historical_disruptions": 5},
+    {"id": "jp-nagar", "name": "JP Nagar", "pin_code": "560078", "lat": 12.9063, "lng": 77.5857, "risk_tier": "high", "risk_score": 65, "weekly_premium": 139, "max_weekly_payout": 7150, "active_riders": 112, "historical_disruptions": 5},
+    {"id": "yelahanka", "name": "Yelahanka", "pin_code": "560064", "lat": 13.1007, "lng": 77.5963, "risk_tier": "low", "risk_score": 19, "weekly_premium": 39, "max_weekly_payout": 1430, "active_riders": 178, "historical_disruptions": 1},
+    {"id": "hebbal", "name": "Hebbal", "pin_code": "560024", "lat": 13.0358, "lng": 77.5970, "risk_tier": "high", "risk_score": 71, "weekly_premium": 139, "max_weekly_payout": 7150, "active_riders": 103, "historical_disruptions": 5},
 ]
 
 RIDERS = [

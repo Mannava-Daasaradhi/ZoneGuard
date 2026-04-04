@@ -65,11 +65,11 @@ Open **http://localhost:5173** → ZoneGuard is live.
 |------|---------|-------------|
 | 1 | Open http://localhost:5173 | Landing page — ZoneGuard pitch |
 | 2 | "Get Covered" → Onboarding | 3-step: Rider ID → Zone → Earnings |
-| 3 | Confirm policy | Rider Dashboard — ₹49/week active coverage |
+| 3 | Confirm policy | Rider Dashboard — ₹89/week active coverage (HSR Medium Risk) |
 | 4 | Admin Dashboard → Disruption Simulator | Select HSR Layout → "Flash Flood" |
 | 5 | Trigger simulation | QuadSignal panel: S1+S2+S3+S4 all fire → HIGH confidence |
 | 6 | Claims Queue | Auto-created claim — Exclusion check PASSED — FraudShield 12% risk |
-| 7 | Approve payout | UPI ref ZG-2026-XXXXXXXX generated — ₹1,650 disbursed |
+| 7 | Approve payout | UPI ref ZG-2026-XXXXXXXX generated — ₹1,430 disbursed (55% of ₹2,600 daily baseline) |
 | 8 | KPIs update | Total payouts ↑, Loss ratio ↑, Active claims ↓ |
 
 ### Phase 2 Deliverables Checklist
@@ -831,30 +831,31 @@ The hardest part of any insurance business is distribution. ZoneGuard's B2B2C mo
 - [x] Zone database seed plan (10 Bengaluru pin codes with IMD historical data)
 - [x] WhatsApp onboarding flow design
 
-### Phase 2 [March 21 – April 4]: Automation & Protection
+### Phase 2 [March 21 – April 4]: Automation & Protection ← **COMPLETE**
 
-- [ ] WhatsApp onboarding bot (Twilio API integration)
-- [ ] Rider KYC flow (Amazon Flex Rider ID + device fingerprinting + phone OTP)
-- [ ] Insurance Policy Management (create, activate, pause, cancel)
-- [ ] Dynamic premium calculation API (XGBoost ZoneRisk Scorer, live zone data)
-- [ ] QuadSignal Fusion Engine live (Signals 1–3 live; Signal 4 operational via WhatsApp)
-- [ ] Claims Management UI (auto-trigger pipeline + manual review queue)
-- [ ] LLM Claim Audit integration (Claude API for MEDIUM confidence events)
-- [ ] Razorpay test mode UPI payout simulation
-- [ ] FraudShield v1 (GPS cross-reference + cell tower check + Isolation Forest)
-- [ ] ZoneTwin v1 (per-zone risk simulation, 10 Bengaluru zones)
+- [x] WhatsApp onboarding bot — simulated (`whatsapp_sim.py`); web onboarding fully functional
+- [x] Rider KYC flow — Amazon Flex Rider ID + phone binding + `kyc_verified` flag
+- [x] Insurance Policy Management — create / view / renew / cancel with full exclusion list
+- [x] Dynamic premium calculation API — ZoneRisk Scorer, ₹39/₹89/₹139/₹225 tiers, live zone data
+- [x] QuadSignal Fusion Engine live — S1 (OpenWeatherMap live), S2-S4 simulated; 4 auto-scenarios
+- [x] Claims Management UI — auto-trigger pipeline + manual review queue + Gemini AI audit
+- [x] LLM Claim Audit integration — Gemini 1.5 Flash for MEDIUM confidence claims
+- [x] Razorpay test mode UPI payout simulation — `payout_sim.py` (ZG-2026-XXXXXXXX refs)
+- [x] FraudShield v1 — 8-feature heuristic scorer (velocity, timing, distance, tenure)
+- [x] ZoneTwin v1 — per-zone logistic-curve counterfactual simulation (10 Bengaluru zones)
 
-### Phase 3 [April 5–17]: Scale & Optimise
+### Phase 3 [April 5–17]: Scale & Optimise ← **Final Submission Package**
 
-- [ ] FraudShield v2 — Federated Learning upgrade (Flower framework)
-- [ ] Temporal clustering analysis for collusion ring detection
-- [ ] **Rider Analytics Dashboard** — earnings protected this week, cumulative payout history, active coverage card (zone + premium + payout cap), zone risk level for current week, disruption event feed with signal breakdown
-- [ ] **Insurer Admin Analytics Dashboard** — live zone risk heatmaps (Recharts choropleth), loss ratio by zone and week, QuadSignal event log with confidence scores, next-week disruption probability alerts from ZoneTwin forward runs, FraudShield investigation queue with anomaly scores
-- [ ] Disruption simulation engine (trigger fake zone events for demo — end-to-end walkthrough)
-- [ ] Forward Premium Lock feature (4-week commitment, 8% discount)
-- [ ] e-Shram KYC integration
-- [ ] Final pitch deck (PDF)
-- [ ] 5-minute demo video
+- [x] FraudShield v1 heuristic — velocity, timing, GPS distance, tenure scoring
+- [ ] FraudShield v2 — Federated Learning upgrade (Flower framework) — Phase 3
+- [ ] Temporal clustering analysis for collusion ring detection — Phase 3
+- [x] **Rider Analytics Dashboard** — earnings protected, payout history, active coverage card, zone risk level, disruption event feed
+- [x] **Insurer Admin Analytics Dashboard** — KPI strip, ClaimsChart, PayoutChart, LossRatioWidget, QuadSignal live feed, FraudShield queue
+- [x] Disruption simulation engine — 4 scenarios (flash_flood, severe_aqi, transport_strike, heat_wave)
+- [ ] Forward Premium Lock feature (4-week commitment, 8% discount) — Phase 3
+- [ ] e-Shram KYC integration — Phase 3
+- [ ] **Final pitch deck (PDF)** ← Must create for submission
+- [ ] **5-minute demo video** ← Must record for submission
 
 ---
 
@@ -952,8 +953,8 @@ ZoneGuard's IRDAI "Use & File" regulatory design means product launch can begin 
 
 ---
 
-*Built for Guidewire DEVTrails 2026 · University Hackathon · Phase 1 Final Submission*
-*Submitted: March 2026*
+*Built for Guidewire DEVTrails 2026 · University Hackathon · Phase 2 Complete Submission*
+*Phase 1 Submitted: March 20, 2026 · Phase 2 Submitted: April 4, 2026*
 
 ---
 
