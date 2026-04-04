@@ -1,33 +1,33 @@
 import type { Zone, WeekDay, Payout, Signal, ClaimEvent, KPI } from '../types';
 
 export const ZONES: Zone[] = [
-  { id: 'hsr', name: 'HSR Layout', pinCode: '560102', riskTier: 'medium', riskScore: 58, weeklyPremium: 49, maxWeeklyPayout: 2200, activeRiders: 142, disruptions: 3 },
-  { id: 'koramangala', name: 'Koramangala', pinCode: '560034', riskTier: 'medium', riskScore: 54, weeklyPremium: 49, maxWeeklyPayout: 2200, activeRiders: 198, disruptions: 3 },
-  { id: 'whitefield', name: 'Whitefield', pinCode: '560066', riskTier: 'low', riskScore: 22, weeklyPremium: 29, maxWeeklyPayout: 1800, activeRiders: 215, disruptions: 1 },
-  { id: 'indiranagar', name: 'Indiranagar', pinCode: '560038', riskTier: 'medium', riskScore: 61, weeklyPremium: 49, maxWeeklyPayout: 2200, activeRiders: 167, disruptions: 3 },
-  { id: 'electronic-city', name: 'Electronic City', pinCode: '560100', riskTier: 'low', riskScore: 31, weeklyPremium: 29, maxWeeklyPayout: 1800, activeRiders: 289, disruptions: 1 },
-  { id: 'bellandur', name: 'Bellandur', pinCode: '560103', riskTier: 'flood-prone', riskScore: 87, weeklyPremium: 99, maxWeeklyPayout: 3500, activeRiders: 94, disruptions: 8 },
-  { id: 'btm-layout', name: 'BTM Layout', pinCode: '560076', riskTier: 'high', riskScore: 72, weeklyPremium: 69, maxWeeklyPayout: 2800, activeRiders: 131, disruptions: 5 },
-  { id: 'jp-nagar', name: 'JP Nagar', pinCode: '560078', riskTier: 'high', riskScore: 68, weeklyPremium: 69, maxWeeklyPayout: 2800, activeRiders: 112, disruptions: 5 },
-  { id: 'yelahanka', name: 'Yelahanka', pinCode: '560064', riskTier: 'low', riskScore: 19, weeklyPremium: 29, maxWeeklyPayout: 1800, activeRiders: 178, disruptions: 1 },
-  { id: 'hebbal', name: 'Hebbal', pinCode: '560024', riskTier: 'high', riskScore: 74, weeklyPremium: 69, maxWeeklyPayout: 2800, activeRiders: 103, disruptions: 5 },
+  { id: 'hsr', name: 'HSR Layout', pinCode: '560102', riskTier: 'medium', riskScore: 45, weeklyPremium: 89, maxWeeklyPayout: 4290, activeRiders: 142, disruptions: 3 },
+  { id: 'koramangala', name: 'Koramangala', pinCode: '560034', riskTier: 'medium', riskScore: 48, weeklyPremium: 89, maxWeeklyPayout: 4290, activeRiders: 198, disruptions: 3 },
+  { id: 'whitefield', name: 'Whitefield', pinCode: '560066', riskTier: 'low', riskScore: 22, weeklyPremium: 39, maxWeeklyPayout: 1430, activeRiders: 215, disruptions: 1 },
+  { id: 'indiranagar', name: 'Indiranagar', pinCode: '560038', riskTier: 'medium', riskScore: 50, weeklyPremium: 89, maxWeeklyPayout: 4290, activeRiders: 167, disruptions: 3 },
+  { id: 'electronic-city', name: 'Electronic City', pinCode: '560100', riskTier: 'low', riskScore: 24, weeklyPremium: 39, maxWeeklyPayout: 1430, activeRiders: 289, disruptions: 1 },
+  { id: 'bellandur', name: 'Bellandur', pinCode: '560103', riskTier: 'flood-prone', riskScore: 87, weeklyPremium: 225, maxWeeklyPayout: 11440, activeRiders: 94, disruptions: 8 },
+  { id: 'btm-layout', name: 'BTM Layout', pinCode: '560076', riskTier: 'high', riskScore: 68, weeklyPremium: 139, maxWeeklyPayout: 7150, activeRiders: 131, disruptions: 5 },
+  { id: 'jp-nagar', name: 'JP Nagar', pinCode: '560078', riskTier: 'high', riskScore: 65, weeklyPremium: 139, maxWeeklyPayout: 7150, activeRiders: 112, disruptions: 5 },
+  { id: 'yelahanka', name: 'Yelahanka', pinCode: '560064', riskTier: 'low', riskScore: 19, weeklyPremium: 39, maxWeeklyPayout: 1430, activeRiders: 178, disruptions: 1 },
+  { id: 'hebbal', name: 'Hebbal', pinCode: '560024', riskTier: 'high', riskScore: 71, weeklyPremium: 139, maxWeeklyPayout: 7150, activeRiders: 103, disruptions: 5 },
 ];
 
 export const RAVI_WEEK: WeekDay[] = [
   { day: 'Mon', date: '2026-03-16', status: 'normal', earnings: 2600 },
   { day: 'Tue', date: '2026-03-17', status: 'normal', earnings: 2800 },
-  { day: 'Wed', date: '2026-03-18', status: 'payout', earnings: 0, payoutAmount: 1950, disruptionType: 'Flash flood — all 4 signals fired' },
-  { day: 'Thu', date: '2026-03-19', status: 'payout', earnings: 0, payoutAmount: 1950, disruptionType: 'Flood continues — signals sustained' },
+  { day: 'Wed', date: '2026-03-18', status: 'payout', earnings: 0, payoutAmount: 1430, disruptionType: 'Flash flood — all 4 signals fired' },
+  { day: 'Thu', date: '2026-03-19', status: 'payout', earnings: 0, payoutAmount: 1430, disruptionType: 'Flood continues — signals sustained' },
   { day: 'Fri', date: '2026-03-20', status: 'normal', earnings: 2400 },
   { day: 'Sat', date: '2026-03-21', status: 'normal', earnings: 2200 },
   { day: 'Sun', date: '2026-03-22', status: 'normal', earnings: 0 },
 ];
 
 export const PAYOUTS: Payout[] = [
-  { id: 'P001', date: '2026-03-19', amount: 1950, zone: 'HSR Layout', trigger: 'Flash Flood (ENV-01)', confidence: 'HIGH', upiRef: 'ZG-2026-3819' },
-  { id: 'P002', date: '2026-03-18', amount: 1950, zone: 'HSR Layout', trigger: 'Flash Flood (ENV-01)', confidence: 'HIGH', upiRef: 'ZG-2026-3818' },
-  { id: 'P003', date: '2026-02-11', amount: 1950, zone: 'HSR Layout', trigger: 'Transport Strike (SOC-02)', confidence: 'HIGH', upiRef: 'ZG-2026-2111' },
-  { id: 'P004', date: '2026-01-08', amount: 1650, zone: 'HSR Layout', trigger: 'Severe AQI (ENV-02)', confidence: 'MEDIUM', upiRef: 'ZG-2026-0801' },
+  { id: 'P001', date: '2026-03-19', amount: 1430, zone: 'HSR Layout', trigger: 'Flash Flood (ENV-01)', confidence: 'HIGH', upiRef: 'ZG-2026-3819' },
+  { id: 'P002', date: '2026-03-18', amount: 1430, zone: 'HSR Layout', trigger: 'Flash Flood (ENV-01)', confidence: 'HIGH', upiRef: 'ZG-2026-3818' },
+  { id: 'P003', date: '2026-02-11', amount: 1430, zone: 'HSR Layout', trigger: 'Transport Strike (SOC-02)', confidence: 'HIGH', upiRef: 'ZG-2026-2111' },
+  { id: 'P004', date: '2026-01-08', amount: 1430, zone: 'HSR Layout', trigger: 'Severe AQI (ENV-02)', confidence: 'MEDIUM', upiRef: 'ZG-2026-0801' },
 ];
 
 export const QUAD_SIGNALS: Signal[] = [
