@@ -1,0 +1,10 @@
+# Root config points Railway to the backend service
+[build]
+builder = "dockerfile"
+dockerfilePath = "backend/Dockerfile"
+buildContext = "backend"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
