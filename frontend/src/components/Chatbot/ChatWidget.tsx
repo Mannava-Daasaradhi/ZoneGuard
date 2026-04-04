@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import ChatMessage from './ChatMessage'
 import ChatInput from './ChatInput'
 import { findResponse, WELCOME_MESSAGE } from '../../data/chatResponses'
@@ -40,7 +40,7 @@ export default function ChatWidget() {
     }
   }, [messages, isOpen])
 
-  const handleSend = (text: string) => {
+  const handleSend = useCallback((text: string) => {
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       text,
@@ -61,12 +61,12 @@ export default function ChatWidget() {
       }
       setMessages((prev) => [...prev, botMessage])
       setIsTyping(false)
-    }, 600 + Math.random() * 400)
-  }
+    }, 700)
+  }, [])
 
-  const handleQuickAction = (query: string) => {
+  const handleQuickAction = useCallback((query: string) => {
     handleSend(query)
-  }
+  }, [handleSend])
 
   return (
     <>
