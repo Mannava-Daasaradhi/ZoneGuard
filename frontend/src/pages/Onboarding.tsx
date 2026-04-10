@@ -75,7 +75,7 @@ export default function OnboardingPage() {
   const selectedZone = normalizedZones.find(z => z.id === selectedZoneId)
   const earningsNum = parseInt(earnings, 10)
   const dailyAvg = earnings && !isNaN(earningsNum) ? Math.round(earningsNum / 7) : 0
-  const perDayPayout = Math.round(dailyAvg * 0.75)
+  const perDayPayout = Math.round(dailyAvg * 0.55)
 
   const goBack = () => {
     if (step === 1) navigate('/')
@@ -226,7 +226,7 @@ export default function OnboardingPage() {
                     ['Weekly premium', `₹${selectedZone.weeklyPremium}`],
                     ['Max payout/week', `₹${(selectedZone.maxWeeklyPayout ?? 0).toLocaleString()}`],
                     ['Per-day payout', earnings && earningsNum > 0
-                      ? `₹${perDayPayout.toLocaleString()} (75% of ₹${dailyAvg.toLocaleString()} daily avg)`
+                      ? `₹${perDayPayout.toLocaleString()} (55% of ₹${dailyAvg.toLocaleString()} daily avg)`
                       : '— Enter earnings above'],
                   ] as [string, string][]).map(([k, v]) => (
                     <div key={k} className="flex justify-between py-1.5 border-b border-amber-100 last:border-0">
