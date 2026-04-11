@@ -14,5 +14,12 @@ class Rider(Base):
     tenure_weeks = Column(Integer, default=0)
     kyc_verified = Column(Boolean, default=False)
     upi_id = Column(String, nullable=True)
+
+    # e-Shram integration (Phase 3)
+    eshram_id = Column(String, nullable=True, unique=True)       # UAN-format e-Shram ID
+    eshram_verified = Column(Boolean, default=False)             # verified via e-Shram portal API
+    eshram_income_verified = Column(Boolean, default=False)      # earnings baseline cross-checked
+    eshram_verified_at = Column(DateTime(timezone=True), nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -2,6 +2,7 @@ import type {
   Zone, ZoneSignalData, PremiumBreakdown, PolicyData, Exclusion,
   RawRider, RawApiZone, RawApiClaim, RawApiPayout,
   KPI, SimulationResult,
+  EShramVerificationResponse, FederatedRoundResult, RingDetectionDemoResult,
 } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -113,6 +114,24 @@ export const getActiveSimulations = () => fetchAPI<SimulationResult[]>('/api/v1/
 export const stopSimulation = (simId: string) =>
   fetchAPI<SimulationResult>(`/api/v1/simulator/stop/${simId}`, { method: 'DELETE' })
 export const getScenarios = () => fetchAPI<ScenariosResponse>('/api/v1/simulator/scenarios')
+
+// e-Shram KYC (Phase 3)
+export const submitEShramKYC = (riderId: string, eshramId: string, declaredWeeklyEarnings?: number) =>
+  fetchAPI<EShramVerificationResponse>(`/api/v1/riders/${riderId}/eshram-kyc`, {
+    method: 'POST',
+    body: JSON.stringify({ eshram_id: eshramId, declared_weekly_earnings: declaredWeeklyEarnings }),
+  })
+
+// FraudShield v2 — Federated Learning (Phase 3)
+export const triggerFederatedRound = (nRounds: number = 3) =>
+  fetchAPI<FederatedRoundResult>(`/api/v1/admin/fraudshield/federated-round?n_rounds=${nRounds}`, {
+    method: 'POST',
+  })
+
+export const ringDetectionDemo = () =>
+  fetchAPI<RingDetectionDemoResult>('/api/v1/admin/fraudshield/ring-detection-demo', {
+    method: 'POST',
+  })
 
 // Re-export Zone for consumers that used the old `getZones` → Zone[] pattern
 export type { Zone }

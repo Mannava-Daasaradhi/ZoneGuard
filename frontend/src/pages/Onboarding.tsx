@@ -6,6 +6,7 @@ import { getZones, registerRider, createPolicy, calculatePremium } from '../serv
 import BengaluruZoneMap from '../components/Map/BengaluruZoneMap'
 import ExclusionsList from '../components/Policy/ExclusionsList'
 import PremiumBreakdownComponent from '../components/Policy/PremiumBreakdown'
+import EShramKYCCard from '../components/Rider/EShramKYCCard'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -252,41 +253,50 @@ export default function OnboardingPage() {
 
           {/* Step 4: Success */}
           {step === 4 && selectedZone && (
-            <div className="bg-white rounded-2xl border border-emerald-200 shadow-sm p-6 sm:p-8 text-center">
-              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl border border-emerald-200 shadow-sm p-6 sm:p-8 text-center">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                  <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-stone-800 font-bold text-2xl mb-1">You're covered!</h2>
+                <p className="text-stone-500 text-sm mb-1">{selectedZone.name} · ₹{selectedZone.weeklyPremium}/week</p>
+                <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1 mb-6">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-emerald-700 text-xs font-semibold">Active now</span>
+                </div>
+
+                <p className="text-stone-500 text-sm leading-relaxed mb-2">If all 4 signals converge in your zone,</p>
+                <p className="text-stone-800 font-bold text-lg mb-1">₹{(selectedZone.maxWeeklyPayout ?? 0).toLocaleString()} lands in your UPI</p>
+                <p className="text-stone-400 text-sm mb-6">automatically — within 2 hours. No claim needed.</p>
+
+                <div className="bg-stone-50 border border-stone-100 rounded-xl p-4 text-left mb-4">
+                  <p className="text-stone-600 text-xs font-semibold mb-2">What you're protected against</p>
+                  {['Flash floods & heavy rainfall (>65mm/hr)', 'Severe air pollution (AQI >300)', 'Zone curfews & transport strikes', 'NDMA-declared flood alerts'].map(item => (
+                    <div key={item} className="flex items-start gap-2 py-1">
+                      <span className="text-emerald-500 text-xs mt-0.5">✓</span>
+                      <span className="text-stone-600 text-xs">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <ExclusionsList exclusions={STANDARD_EXCLUSIONS} compact />
+
+                <button onClick={() => navigate('/rider')} className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-white font-bold py-3 rounded-xl transition-colors">
+                  View My Dashboard
+                </button>
+                <button onClick={() => navigate('/')} className="w-full mt-2 text-stone-400 hover:text-stone-600 text-sm transition-colors py-2">Back to home</button>
               </div>
-              <h2 className="text-stone-800 font-bold text-2xl mb-1">You're covered!</h2>
-              <p className="text-stone-500 text-sm mb-1">{selectedZone.name} · ₹{selectedZone.weeklyPremium}/week</p>
-              <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1 mb-6">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-emerald-700 text-xs font-semibold">Active now</span>
-              </div>
 
-              <p className="text-stone-500 text-sm leading-relaxed mb-2">If all 4 signals converge in your zone,</p>
-              <p className="text-stone-800 font-bold text-lg mb-1">₹{(selectedZone.maxWeeklyPayout ?? 0).toLocaleString()} lands in your UPI</p>
-              <p className="text-stone-400 text-sm mb-6">automatically — within 2 hours. No claim needed.</p>
-
-              <div className="bg-stone-50 border border-stone-100 rounded-xl p-4 text-left mb-4">
-                <p className="text-stone-600 text-xs font-semibold mb-2">What you're protected against</p>
-                {['Flash floods & heavy rainfall (>65mm/hr)', 'Severe air pollution (AQI >300)', 'Zone curfews & transport strikes', 'NDMA-declared flood alerts'].map(item => (
-                  <div key={item} className="flex items-start gap-2 py-1">
-                    <span className="text-emerald-500 text-xs mt-0.5">✓</span>
-                    <span className="text-stone-600 text-xs">{item}</span>
-                  </div>
-                ))}
-              </div>
-
-              <ExclusionsList exclusions={STANDARD_EXCLUSIONS} compact />
-
-              <button onClick={() => navigate('/rider')} className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-white font-bold py-3 rounded-xl transition-colors">
-                View My Dashboard
-              </button>
-              <button onClick={() => navigate('/')} className="w-full mt-2 text-stone-400 hover:text-stone-600 text-sm transition-colors py-2">Back to home</button>
+              {/* e-Shram KYC — optional post-signup CTA */}
+              <EShramKYCCard
+                riderId={riderId}
+                weeklyEarnings={earningsNum || undefined}
+              />
             </div>
           )}
+
         </div>
       </main>
     </div>
