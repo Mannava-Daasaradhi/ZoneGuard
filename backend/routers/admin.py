@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from db.database import get_db
@@ -80,13 +80,6 @@ async def get_kpis(db: AsyncSession = Depends(get_db)):
         },
     }
 
-"""
-Add these two endpoints to backend/routers/admin.py
-(append to the existing file — don't replace it)
-
-These expose FraudShield v2 federated training via the Admin Dashboard.
-"""
-
 
 @router.post("/fraudshield/federated-round")
 async def trigger_federated_round(n_rounds: int = 3):
@@ -101,16 +94,24 @@ async def trigger_federated_round(n_rounds: int = 3):
 
     Use n_rounds=1 for a quick demo; n_rounds=3 for convergence demo.
     """
-    from ml.federated import run_federated_round as _run_fl
     try:
-        result = _run_fl(n_rounds=max(1, min(n_rounds, 5)))
+        # run_federated_round is CPU-bound (IsolationForest training).
+        # For a hackathon demo with a single admin user this is fine.
+        # In production this would be offloaded via asyncio.to_thread().
+        result = run_federated_round(n_rounds=max(1, min(n_rounds, 5)))
         return {
             "status": "complete",
             "federated_training": result,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Federated round failed: {str(e)}")
+    except (RuntimeError, ValueError) as err:
+        # Catch only the specific errors run_federated_round can raise.
+        # Re-raise with exception chaining so the traceback is preserved
+        # in server logs while the client only sees a safe generic message.
+        raise HTTPException(
+            status_code=500,
+            detail="Federated round failed — check server logs for details.",
+        ) from err
 
 
 @router.post("/fraudshield/ring-detection-demo")
@@ -122,7 +123,6 @@ async def ring_detection_demo():
     Shows judges the contrast between Poisson-distributed genuine claims
     and the sharp temporal spike of a Telegram-coordinated fraud ring.
     """
-    from ml.fraud_shield import detect_coordination_ring
     import random
     from datetime import timedelta
 

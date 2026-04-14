@@ -64,7 +64,13 @@ export default function EShramKYCCard({ riderId, weeklyEarnings, onVerified }: P
   return (
     <div className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
       {/* Header — always visible */}
+      {/*
+        FIX: type="button" added to prevent accidental form submission if this
+        component is ever wrapped in a <form>.  Without it the browser defaults
+        to type="submit" which triggers the nearest form's submit handler.
+      */}
       <button
+        type="button"
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-3 p-4 hover:bg-blue-50/50 transition-colors"
       >
@@ -146,7 +152,13 @@ export default function EShramKYCCard({ riderId, weeklyEarnings, onVerified }: P
             </div>
           )}
 
+          {/*
+            FIX: type="button" here too — same reason as the toggle above.
+            Without this, pressing Enter in the input above could trigger this
+            button as a form submit in some browser/framework combinations.
+          */}
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={loading || !isValidFormat}
             className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-200 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"

@@ -16,9 +16,15 @@ class Rider(Base):
     upi_id = Column(String, nullable=True)
 
     # e-Shram integration (Phase 3)
-    eshram_id = Column(String, nullable=True, unique=True)       # UAN-format e-Shram ID
-    eshram_verified = Column(Boolean, default=False)             # verified via e-Shram portal API
-    eshram_income_verified = Column(Boolean, default=False)      # earnings baseline cross-checked
+    # NOTE: unique=True is intentionally REMOVED here.
+    # Uniqueness for non-NULL values is enforced by the partial index
+    # ix_riders_eshram_id in migration 003_eshram_kyc.py.
+    # Keeping unique=True AND the partial index would create two overlapping
+    # constraints — the full unique constraint treats NULL as a value on some
+    # DBs, which would break when multiple unverified riders exist.
+    eshram_id = Column(String, nullable=True)               # UAN-format e-Shram ID
+    eshram_verified = Column(Boolean, default=False)        # verified via e-Shram portal API
+    eshram_income_verified = Column(Boolean, default=False) # earnings baseline cross-checked
     eshram_verified_at = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

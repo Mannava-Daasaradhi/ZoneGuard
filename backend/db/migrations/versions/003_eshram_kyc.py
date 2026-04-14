@@ -1,7 +1,7 @@
 """add eshram fields to riders
 
 Revision ID: 003_eshram_kyc
-Revises: 002  (update this to your actual previous revision ID)
+Revises: (initial migration — no prior revision)
 Create Date: 2026-04-10
 """
 
@@ -9,15 +9,23 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "003_eshram_kyc"
-down_revision = "002"   # UPDATE to your actual previous migration revision ID
+down_revision = None   # This is the ONLY migration in this project.
+                       # Setting this to "002" would reference a file that
+                       # does not exist and break alembic upgrade head on
+                       # a fresh database.
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
+    # eshram_id: nullable because most riders won't have it immediately.
+    # We intentionally omit unique=True here — the partial unique index
+    # below is the sole uniqueness mechanism.  A full unique constraint
+    # would treat multiple NULLs as duplicates on some databases, which
+    # would incorrectly prevent multiple un-verified riders.
     op.add_column(
         "riders",
-        sa.Column("eshram_id", sa.String(), nullable=True, unique=True),
+        sa.Column("eshram_id", sa.String(), nullable=True),
     )
     op.add_column(
         "riders",
@@ -35,7 +43,9 @@ def upgrade() -> None:
             nullable=True,
         ),
     )
-    # Unique index on eshram_id for deduplication enforcement
+    # Partial unique index: only enforce uniqueness for non-NULL values.
+    # This lets many riders have eshram_id = NULL (not yet linked) while
+    # preventing the same UAN being tied to two different rider accounts.
     op.create_index(
         "ix_riders_eshram_id",
         "riders",

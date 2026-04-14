@@ -122,41 +122,29 @@ def calculate_fraud_score(
 # Temporal Clustering Ring Detection
 # ---------------------------------------------------------------------------
 
-BUCKET_SIZE_MINUTES = 5          # 5-minute buckets for timestamp graphs
-SPIKE_WINDOW_MINUTES = 15        # window in which a spike is evaluated
-SPIKE_THRESHOLD_COUNT = 8        # ≥8 claims in SPIKE_WINDOW → suspicious spike
-COORDINATION_CC_THRESHOLD = 0.45 # clustering coefficient above this = ring signal
-MIN_ZONE_CLAIMS_FOR_ANALYSIS = 5 # need at least 5 claims to run ring detection
-POISSON_DEVIATION_THRESHOLD = 3.5  # z-score above this triggers ring alert
+BUCKET_SIZE_MINUTES = 5
+SPIKE_WINDOW_MINUTES = 15
+SPIKE_THRESHOLD_COUNT = 8
+COORDINATION_CC_THRESHOLD = 0.45
+MIN_ZONE_CLAIMS_FOR_ANALYSIS = 5
+POISSON_DEVIATION_THRESHOLD = 3.5
 
 
 def _bucket_timestamps(timestamps: List[datetime], bucket_minutes: int = BUCKET_SIZE_MINUTES) -> dict:
-    """
-    Group claim timestamps into fixed-width time buckets.
-    Returns {bucket_index: [list_of_timestamps_in_bucket]}.
-    """
     if not timestamps:
         return {}
-
     earliest = min(timestamps)
     buckets = defaultdict(list)
     for ts in timestamps:
         delta_minutes = (ts - earliest).total_seconds() / 60
         bucket_idx = int(delta_minutes // bucket_minutes)
         buckets[bucket_idx].append(ts)
-
     return dict(buckets)
 
 
 def _compute_inter_arrival_stats(timestamps: List[datetime]) -> dict:
-    """
-    Compute inter-arrival time statistics for a set of claim timestamps.
-    Genuine Poisson process: inter-arrivals are exponentially distributed.
-    Coordinated attack: inter-arrivals cluster near zero.
-    """
     if len(timestamps) < 2:
         return {"mean_gap_seconds": None, "cv": None, "min_gap_seconds": None}
-
     sorted_ts = sorted(timestamps)
     gaps = [
         (sorted_ts[i + 1] - sorted_ts[i]).total_seconds()
@@ -164,9 +152,7 @@ def _compute_inter_arrival_stats(timestamps: List[datetime]) -> dict:
     ]
     mean_gap = float(np.mean(gaps))
     std_gap = float(np.std(gaps))
-    # Coefficient of Variation: for Poisson, CV ≈ 1.0; for synchronized, CV << 1
     cv = std_gap / mean_gap if mean_gap > 0 else 0.0
-
     return {
         "mean_gap_seconds": round(mean_gap, 1),
         "std_gap_seconds": round(std_gap, 1),
@@ -176,48 +162,25 @@ def _compute_inter_arrival_stats(timestamps: List[datetime]) -> dict:
 
 
 def _clustering_coefficient(buckets: dict) -> float:
-    """
-    Compute a simple clustering coefficient on the bucket graph.
-
-    We treat each non-empty bucket as a node. Two nodes are "connected"
-    if they are adjacent buckets (within ±1 bucket of each other).
-    CC = (edges between connected nodes) / (max possible edges).
-
-    High CC means claims are bunched into adjacent time windows → coordination signal.
-    Low CC means claims are spread across many isolated windows → genuine disruption.
-    """
     if len(buckets) < 2:
         return 0.0
-
     bucket_ids = sorted(buckets.keys())
     n = len(bucket_ids)
-
-    # Count adjacent pairs
     adjacent_pairs = 0
     for i in range(len(bucket_ids) - 1):
         if bucket_ids[i + 1] - bucket_ids[i] == 1:
             adjacent_pairs += 1
-
     max_adjacent = n - 1
     if max_adjacent == 0:
         return 0.0
-
     return round(adjacent_pairs / max_adjacent, 3)
 
 
 def _spike_detector(buckets: dict, window_buckets: int = 3) -> dict:
-    """
-    Detect sharp temporal spikes: ≥ SPIKE_THRESHOLD_COUNT claims in a
-    SPIKE_WINDOW_MINUTES window.
-
-    Returns the worst spike found and its bucket range.
-    """
     bucket_ids = sorted(buckets.keys())
     max_spike_count = 0
     spike_bucket_start = None
-
     for i, b in enumerate(bucket_ids):
-        # Sum claims in [b, b + window_buckets)
         window_count = sum(
             len(buckets.get(b + offset, []))
             for offset in range(window_buckets)
@@ -225,7 +188,6 @@ def _spike_detector(buckets: dict, window_buckets: int = 3) -> dict:
         if window_count > max_spike_count:
             max_spike_count = window_count
             spike_bucket_start = b
-
     return {
         "max_spike_count": max_spike_count,
         "spike_bucket_start": spike_bucket_start,
@@ -236,10 +198,6 @@ def _spike_detector(buckets: dict, window_buckets: int = 3) -> dict:
 
 
 def _poisson_z_score(observed_count: int, expected_mean: float) -> float:
-    """
-    Z-score for a Poisson process.
-    z = (observed - mean) / sqrt(mean)
-    """
     if expected_mean <= 0:
         return 0.0
     return (observed_count - expected_mean) / math.sqrt(expected_mean)
@@ -251,31 +209,8 @@ def detect_coordination_ring(
     expected_claims_mean: Optional[float] = None,
 ) -> dict:
     """
-    Analyze a batch of claim timestamps from one zone during an event window
-    to determine whether they represent a genuine disruption or a coordinated
-    fraud ring.
-
-    Args:
-        zone_id: The zone being analyzed.
-        claim_timestamps: All claim creation timestamps from this zone in the
-                          current 2-hour event window.
-        expected_claims_mean: ZoneTwin's historical prediction for how many
-                              riders go dark in this zone under current conditions.
-                              If None, only structural analysis is performed.
-
-    Returns:
-        {
-            "zone_id": str,
-            "claim_count": int,
-            "verdict": "genuine" | "suspicious" | "ring_detected",
-            "confidence": float (0–1),
-            "ring_signals": list[str],
-            "inter_arrival": dict,
-            "clustering_coefficient": float,
-            "spike": dict,
-            "poisson_z_score": float | None,
-            "recommendation": str,
-        }
+    Analyze claim timestamps from one zone during an event window to determine
+    whether they represent a genuine disruption or a coordinated fraud ring.
     """
     ring_signals = []
     confidence = 0.0
@@ -299,9 +234,6 @@ def detect_coordination_ring(
     cc = _clustering_coefficient(buckets)
     spike = _spike_detector(buckets)
 
-    # --- Signal 1: Low CV (synchronized arrivals) ---
-    # Genuine Poisson: CV ≈ 1.0
-    # Telegram "go now": CV ≈ 0.1–0.3
     cv = inter_arrival.get("cv", 1.0)
     if cv is not None and cv < 0.30:
         ring_signals.append(
@@ -310,7 +242,6 @@ def detect_coordination_ring(
         )
         confidence += 0.35
 
-    # --- Signal 2: Temporal spike ---
     if spike.get("spike_detected"):
         ring_signals.append(
             f"temporal spike: {spike['max_spike_count']} claims in "
@@ -319,7 +250,6 @@ def detect_coordination_ring(
         )
         confidence += 0.30
 
-    # --- Signal 3: High clustering coefficient ---
     if cc > COORDINATION_CC_THRESHOLD:
         ring_signals.append(
             f"clustering coefficient={cc:.2f} > {COORDINATION_CC_THRESHOLD} "
@@ -327,7 +257,6 @@ def detect_coordination_ring(
         )
         confidence += 0.20
 
-    # --- Signal 4: ZoneTwin Poisson deviation ---
     poisson_z = None
     if expected_claims_mean is not None:
         poisson_z = _poisson_z_score(len(claim_timestamps), expected_claims_mean)
@@ -341,7 +270,6 @@ def detect_coordination_ring(
 
     confidence = min(1.0, confidence)
 
-    # --- Verdict ---
     if confidence >= 0.70:
         verdict = "ring_detected"
         recommendation = (
@@ -389,27 +317,12 @@ def analyze_zone_event_batch(
     Run both individual scoring + ring detection on a batch of claims
     from a single zone event.
 
-    Each claim dict should have:
-    {
-        "claim_id": str,
-        "created_at": datetime (UTC),
-        "claim_hour": int,
-        "tenure_weeks": int,
-        "zone_inactivity_pct": float,
-        "claim_velocity_7d": int,
-        "zone_claim_rate_deviation": float,
-        "distance_from_centroid_km": float,
-        "s1_value": float,
-        "days_since_policy_start": int,
-    }
-
-    Returns:
-    {
-        "ring_analysis": dict,         # from detect_coordination_ring
-        "individual_scores": list[dict], # per-claim fraud scores
-        "high_risk_claim_ids": list[str],
-        "summary": str,
-    }
+    FIX (vs original): The summary logic now correctly handles all four
+    verdict states — 'ring_detected', 'suspicious', 'insufficient_data',
+    and 'genuine'.  Previously, 'suspicious' and 'insufficient_data' fell
+    through to the final else-branch which incorrectly said "Approved for
+    auto-payout."  That was a logic inversion: the ring detector had flagged
+    the batch as uncertain but the summary was telling operators to release it.
     """
     timestamps = [c["created_at"] for c in claims]
     ring_analysis = detect_coordination_ring(zone_id, timestamps, expected_claims_mean)
@@ -437,6 +350,12 @@ def analyze_zone_event_batch(
     verdict = ring_analysis["verdict"]
     high_risk_count = len(high_risk_ids)
 
+    # -------------------------------------------------------------------
+    # FIXED summary logic.
+    # Each verdict branch has a distinct, accurate message.
+    # The original code let 'suspicious' and 'insufficient_data' fall
+    # through to "Approved for auto-payout" which was incorrect.
+    # -------------------------------------------------------------------
     if verdict == "ring_detected":
         summary = (
             f"⚠️  RING DETECTED in zone {zone_id}: "
@@ -444,13 +363,31 @@ def analyze_zone_event_batch(
             f"(confidence {ring_analysis['confidence']:.0%}). "
             f"All payouts held pending investigation."
         )
-    elif high_risk_count > 0:
+    elif verdict == "suspicious":
+        # Coordination signals present but below ring_detected threshold.
+        # Do NOT auto-approve — hold for soft verification.
         summary = (
             f"Zone {zone_id}: {len(claims)} claims processed. "
-            f"{high_risk_count} individual high-risk claim(s) flagged. "
+            f"Batch-level coordination signals detected "
+            f"(confidence {ring_analysis['confidence']:.0%}). "
+            f"Hold for WhatsApp soft-verification before payout."
+        )
+    elif verdict == "insufficient_data":
+        # Not enough claims to run ring analysis. Cannot conclude either way.
+        summary = (
+            f"Zone {zone_id}: {len(claims)} claims processed. "
+            f"Insufficient claim volume for ring analysis (need ≥{MIN_ZONE_CLAIMS_FOR_ANALYSIS}). "
+            f"Individual scores used only — do not batch-approve without zone-level signal."
+        )
+    elif high_risk_count > 0:
+        # Genuine batch verdict but individual flags exist.
+        summary = (
+            f"Zone {zone_id}: {len(claims)} claims processed. "
+            f"{high_risk_count} individual high-risk claim(s) flagged for review. "
             f"Ring pattern: {verdict}."
         )
     else:
+        # Genuine batch verdict, no individual flags — safe to auto-payout.
         summary = (
             f"Zone {zone_id}: {len(claims)} claims processed. "
             f"No ring detected. No individual high-risk flags. "

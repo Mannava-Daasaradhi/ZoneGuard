@@ -292,7 +292,7 @@ export default function OnboardingPage() {
               {/* e-Shram KYC — optional post-signup CTA */}
               <EShramKYCCard
                 riderId={riderId}
-                weeklyEarnings={earningsNum || undefined}
+                weeklyEarnings={Number.isFinite(earningsNum) ? earningsNum : undefined}
               />
             </div>
           )}
