@@ -249,6 +249,12 @@ def detect_coordination_ring(
             f"(threshold: {SPIKE_THRESHOLD_COUNT})"
         )
         confidence += 0.30
+        if len(buckets)==1:
+            ring_signals.append(
+                "all claims concentrated in a single 5-minute bucket"
+            )
+            confidence += 0.10
+         
 
     if cc > COORDINATION_CC_THRESHOLD:
         ring_signals.append(
