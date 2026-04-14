@@ -128,7 +128,7 @@ export default function PolicyPage() {
           <h2 className="text-stone-800 font-bold text-base sm:text-lg mb-3 sm:mb-4">Coverage Terms</h2>
           <div className="space-y-2 sm:space-y-3">
             {[
-              ['Payout calculation', '75% of 7-day average daily earnings'],
+              ['Payout calculation', '55% of 7-day average daily earnings'],
               ['Max consecutive days', '3 disruption days per week'],
               ['Minimum disruption', '4 continuous hours (6am–10pm window)'],
               ['Environmental triggers', 'No waiting period'],

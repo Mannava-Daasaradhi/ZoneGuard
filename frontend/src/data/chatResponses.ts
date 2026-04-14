@@ -6,11 +6,11 @@ export interface ChatResponse {
 export const CHAT_RESPONSES: ChatResponse[] = [
   {
     keywords: ['claim status', 'my claim', 'claim update', 'status'],
-    response: 'Your latest claim is APPROVED ✅. Payout: ₹1,950 credited via UPI (Ref: ZG-2026-3819). Processing time: 47 minutes. View full history in your dashboard.'
+    response: 'Your latest claim is APPROVED ✅. Payout: ₹1,430 credited via UPI (Ref: ZG-2026-3819). Processing time: 47 minutes. View full history in your dashboard.'
   },
   {
     keywords: ['how payout', 'payout calculated', 'payout work', 'calculation', 'how much'],
-    response: 'You receive 75% of your 7-day average daily earnings when all 4 signals fire (HIGH confidence). For MEDIUM confidence (3 signals), you get 65%. Your current baseline: ₹2,600/day → Max payout: ₹1,950/disruption day.'
+    response: 'You receive 55% of your 7-day average daily earnings per disrupted day. HIGH confidence (4 signals) = auto-payout within 2 hrs. MEDIUM confidence (3 signals) = reviewed within 4 hrs. Your current baseline: ₹2,600/day → Max payout: ₹1,430/disruption day.'
   },
   {
     keywords: ['what covered', 'coverage', 'what is covered', 'covered events', 'protection'],
@@ -26,7 +26,7 @@ export const CHAT_RESPONSES: ChatResponse[] = [
   },
   {
     keywords: ['premium', 'cost', 'price', 'how much pay', 'weekly cost'],
-    response: 'Your weekly premium depends on zone risk tier:\n• 🟢 Low risk: ₹29/week\n• 🟡 Medium risk: ₹49/week\n• 🟠 High risk: ₹69/week\n• 🔴 Flood-prone: ₹99/week\n\nPremium auto-deducts every Monday. Skip any week—no lock-in!'
+    response: 'Your weekly premium depends on zone risk tier:\n• 🟢 Low risk: ₹39/week\n• 🟡 Medium risk: ₹89/week\n• 🟠 High risk: ₹139/week\n• 🔴 Flood-prone: ₹225/week\n\nPremium auto-deducts every Monday. Skip any week—no lock-in!'
   },
   {
     keywords: ['signal', 'signals', '4 signals', 'how work', 'quad signal'],
