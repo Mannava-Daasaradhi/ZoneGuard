@@ -145,11 +145,11 @@ export default function QuadSignalPanel() {
           <div className="min-w-0">
             <p className="text-emerald-400 font-bold text-sm">⚡ AUTO-PAYOUT TRIGGERED</p>
             <p className="text-emerald-300 text-xs mt-1 line-clamp-2 sm:line-clamp-none">
-              142 riders · HSR Layout · ₹1,950 each · Total: ₹2,76,900 · Disbursing via UPI...
+              142 riders · HSR Layout · ₹1,430 each · Total: ₹2,03,060 · Disbursing via UPI...
             </p>
           </div>
           <div className="text-left sm:text-right flex-shrink-0">
-            <p className="text-emerald-400 font-bold text-lg">₹2.77L</p>
+            <p className="text-emerald-400 font-bold text-lg">₹2.03L</p>
             <p className="text-emerald-500 text-xs">processing</p>
           </div>
         </div>

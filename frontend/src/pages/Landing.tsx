@@ -85,7 +85,7 @@ export default function LandingPage() {
           ['1,624', 'Active policies'],
           ['10', 'Zones monitored'],
           ['< 2 hrs', 'Avg payout time'],
-          ['₹29–₹99', 'Weekly premiums'],
+          ['₹39–₹225', 'Weekly premiums'],
         ].map(([val, label]) => (
           <div key={label} className="bg-white/5 rounded-xl p-3 sm:bg-transparent sm:p-0">
             <p className="text-white font-bold text-lg">{val}</p>
