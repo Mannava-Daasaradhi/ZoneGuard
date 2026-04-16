@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from core.config import settings
+from config import settings
 from features.feature_12.llm_client import LLMDecisionOutput
 from features.feature_12.models import AutopilotDecision
 

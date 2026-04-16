@@ -32,7 +32,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from core.config import settings
+from config import settings
 # Read-only imports from core modules (rule: do not modify these files)
 from ml.fraud_shield import FraudShield, FraudShieldResult
 from models.zones import Claim, QuadSignal
