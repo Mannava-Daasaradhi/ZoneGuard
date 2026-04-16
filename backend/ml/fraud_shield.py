@@ -407,3 +407,52 @@ def analyze_zone_event_batch(
         "high_risk_claim_ids": high_risk_ids,
         "summary": summary,
     }
+
+
+from dataclasses import dataclass
+from typing import Any, Dict
+
+
+@dataclass
+class FraudShieldResult:
+    fraud_score: float
+    risk_level: str
+    anomaly_flags: list
+    features: dict
+
+    def to_dict(self) -> dict:
+        return {
+            "fraud_score": self.fraud_score,
+            "risk_level": self.risk_level,
+            "anomaly_flags": self.anomaly_flags,
+            "features": self.features,
+        }
+
+
+class FraudShield:
+    def evaluate(self, claim_id: str, claim_data: dict) -> FraudShieldResult:
+        ts = claim_data.get("timestamp")
+        claim_hour = 12
+        if ts:
+            try:
+                claim_hour = datetime.fromisoformat(ts.replace("Z", "+00:00")).hour
+            except Exception:
+                claim_hour = 12
+
+        score_payload = calculate_fraud_score(
+            claim_hour=claim_hour,
+            tenure_weeks=int(claim_data.get("tenure_weeks", 0) or 0),
+            zone_inactivity_pct=float(claim_data.get("zone_inactivity_pct", 100.0) or 100.0),
+            claim_velocity_7d=int(claim_data.get("claim_velocity_7d", 0) or 0),
+            zone_claim_rate_deviation=float(claim_data.get("zone_claim_rate_deviation", 0.0) or 0.0),
+            distance_from_centroid_km=float(claim_data.get("distance_from_centroid_km", 0.0) or 0.0),
+            s1_value=float(claim_data.get("s1_value", 50.0) or 50.0),
+            days_since_policy_start=int(claim_data.get("days_since_policy_start", 999) or 999),
+        )
+
+        return FraudShieldResult(
+            fraud_score=float(score_payload["score"]),
+            risk_level=str(score_payload["risk_level"]).upper(),
+            anomaly_flags=list(score_payload.get("anomaly_signals", [])),
+            features=dict(score_payload.get("features", {})),
+        )
