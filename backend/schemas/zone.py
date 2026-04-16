@@ -14,6 +14,7 @@ class ZoneResponse(BaseModel):
     max_weekly_payout: int
     active_riders: int
     historical_disruptions: int
+    zone_baselines: Optional[dict] = None
 
     class Config:
         from_attributes = True

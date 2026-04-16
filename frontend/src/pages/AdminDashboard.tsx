@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ZONES, KPIS, CLAIMS_QUEUE } from '../data/mock'
-import { getZones, getKPIs, getClaims, reviewClaim, getZoneSignals, getClaimAuditReport } from '../services/api'
+import { getZones, getKPIs, getAdminClaims, reviewClaim, getZoneSignals, getClaimAuditReport } from '../services/api'
 import KPIStrip from '../components/Admin/KPIStrip'
 import QuadSignalPanel from '../components/Admin/QuadSignalPanel'
 import BengaluruZoneMap from '../components/Map/BengaluruZoneMap'
@@ -38,9 +38,9 @@ export default function AdminDashboard() {
         const kpiData = await getKPIs()
         if (kpiData.kpis) setKPIs(kpiData.kpis)
 
-        const c = await getClaims({})
-        if (c.length > 0) {
-          setClaims(c.map((claim) => ({
+        const c = await getAdminClaims({ per_page: 50 })
+        if (c.items && c.items.length > 0) {
+          setClaims(c.items.map((claim) => ({
             id: claim.id, zone: claim.zone_id, zone_id: claim.zone_id, rider_id: claim.rider_id,
             date: claim.created_at?.split('T')[0] || '', confidence: claim.confidence,
             signals: 3, recommendedPayout: claim.recommended_payout, recommended_payout: claim.recommended_payout,

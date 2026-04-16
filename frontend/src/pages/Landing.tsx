@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_URL } from '../services/api'
 
 export default function LandingPage() {
   const navigate = useNavigate()
@@ -28,7 +29,6 @@ export default function LandingPage() {
     setLoggingIn(true)
     setLoginError('')
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
       const res = await fetch(`${API_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
