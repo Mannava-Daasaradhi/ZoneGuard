@@ -7,7 +7,7 @@ from config import get_settings
 from routers import riders, zones, policies, claims, signals, payouts, admin, simulator, premium, notifications
 
 from features.feature_14.pulse_router import router as pulse_router
-from backend.features.feature_12.autopilot_router import router as f12_router
+from features.feature_12.autopilot_router import router as f12_router
 from features.feature_04.zk_router import router as zk_router
 # Configure logging
 logging.basicConfig(
