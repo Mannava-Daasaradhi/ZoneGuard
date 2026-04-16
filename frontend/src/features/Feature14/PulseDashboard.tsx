@@ -205,7 +205,7 @@ function DisruptionChart({ buckets }: { buckets: ChartBucket[] }) {
   const thinned = buckets.filter((_, i) => i % 2 === 0) // show every other label to avoid crowding
   return (
     <ResponsiveContainer width="100%" height={200}>
-      <BarChart data={buckets} margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
+      <BarChart data={thinned} margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
         <XAxis
           dataKey="label"
@@ -223,10 +223,10 @@ function DisruptionChart({ buckets }: { buckets: ChartBucket[] }) {
         <Tooltip
           contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
           labelStyle={{ color: '#e2e8f0', fontSize: 12 }}
-          formatter={(value: number, name: string) => [`${value}%`, 'Disruption prob.']}
+          formatter={(value: number) => [`${value}%`, 'Disruption prob.']}
         />
         <Bar dataKey="disruption_probability" radius={[3, 3, 0, 0]}>
-          {buckets.map((b) => (
+          {thinned.map((b) => (
             <Cell key={b.bucket} fill={bucketColour(b.severity_band)} />
           ))}
         </Bar>
