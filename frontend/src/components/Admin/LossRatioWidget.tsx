@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react';
 import { LOSS_RATIO_DATA, formatCurrency } from '../../data/chartMockData';
-import { getLossRatioTrend } from '../../services/api';
 
 interface CircularProgressProps {
   percentage: number;
@@ -63,32 +61,7 @@ function CircularProgress({ percentage, size = 160, strokeWidth = 12 }: Circular
 }
 
 export default function LossRatioWidget() {
-  const [liveData, setLiveData] = useState<{
-    premiumsCollected: number;
-    totalPayouts: number;
-    lossRatio: number;
-  } | null>(null);
-
-  useEffect(() => {
-    getLossRatioTrend()
-      .then((trend) => {
-        if (trend && trend.length > 0) {
-          // Aggregate from trend data
-          const totalPremiums = trend.reduce((s, d) => s + d.premiums, 0);
-          const totalPayouts = trend.reduce((s, d) => s + d.payouts, 0);
-          if (totalPremiums > 0) {
-            setLiveData({
-              premiumsCollected: totalPremiums,
-              totalPayouts: totalPayouts,
-              lossRatio: (totalPayouts / totalPremiums) * 100,
-            });
-          }
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  const { premiumsCollected, totalPayouts, lossRatio } = liveData || LOSS_RATIO_DATA;
+  const { premiumsCollected, totalPayouts, lossRatio } = LOSS_RATIO_DATA;
 
   // Determine status based on loss ratio
   const getStatus = (ratio: number) => {
@@ -123,9 +96,7 @@ export default function LossRatioWidget() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-white font-bold text-lg">Loss Ratio</h3>
-          <p className="text-slate-400 text-xs">
-            {liveData ? 'Live data from analytics' : 'Weekly performance snapshot'}
-          </p>
+          <p className="text-slate-400 text-xs">Weekly performance snapshot</p>
         </div>
         <div className={`${status.bgColor} border rounded-lg px-2.5 py-1`}>
           <span className={`text-xs font-bold ${status.color}`}>{status.label}</span>
@@ -174,7 +145,7 @@ export default function LossRatioWidget() {
                 netPosition >= 0 ? 'bg-emerald-500' : 'bg-red-500'
               }`}
               style={{
-                width: `${Math.min(100, (Math.abs(netPosition) / Math.max(premiumsCollected, 1)) * 100)}%`,
+                width: `${Math.min(100, (Math.abs(netPosition) / premiumsCollected) * 100)}%`,
               }}
             />
           </div>

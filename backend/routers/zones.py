@@ -3,12 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from db.database import get_db
 from models.zone import Zone
-from models.rider import Rider
-from models.policy import Policy
-from models.claim import Claim
 from schemas.zone import ZoneResponse
-from schemas.rider import RiderResponse
-from schemas.claim import ClaimResponse
 from services.signal_poller import poll_zone_signals
 from ml.signal_fusion import evaluate_s1, evaluate_s2, evaluate_s3, evaluate_s4, fuse_signals
 from ml.zone_twin import counterfactual_inactivity
@@ -85,7 +80,7 @@ async def get_current_signals(zone_id: str, db: AsyncSession = Depends(get_db)):
         "s4_crowd": {
             "status": "firing" if s4["breached"] else "inactive",
             "value": f"Check-ins: {s4['value']:.0f}% inactivity",
-            "threshold": ">=40% inactivity",
+            "threshold": "≥40% inactivity",
             "raw": s4,
         },
         "confidence": fusion["confidence"],
@@ -122,52 +117,6 @@ async def get_risk_score(zone_id: str, db: AsyncSession = Depends(get_db)):
         "risk_tier": zone.risk_tier,
         "zone_twin": twin,
     }
-
-
-@router.get("/{zone_id}/riders")
-async def get_zone_riders(zone_id: str, db: AsyncSession = Depends(get_db)):
-    """List all riders in a zone."""
-    zone = await db.get(Zone, zone_id)
-    if not zone:
-        return {"error": "Zone not found"}
-
-    result = await db.execute(
-        select(Rider).where(Rider.zone_id == zone_id).order_by(Rider.created_at.desc())
-    )
-    riders = result.scalars().all()
-    return [RiderResponse.model_validate(r) for r in riders]
-
-
-@router.get("/{zone_id}/policies")
-async def get_zone_policies(zone_id: str, db: AsyncSession = Depends(get_db)):
-    """Active policies in a zone."""
-    result = await db.execute(
-        select(Policy).where(Policy.zone_id == zone_id).where(Policy.status == "active")
-    )
-    policies = result.scalars().all()
-    return [
-        {
-            "id": p.id,
-            "rider_id": p.rider_id,
-            "zone_id": p.zone_id,
-            "status": p.status,
-            "weekly_premium": p.weekly_premium,
-            "max_payout": p.max_payout,
-            "coverage_start": p.coverage_start.isoformat() if p.coverage_start else None,
-            "coverage_end": p.coverage_end.isoformat() if p.coverage_end else None,
-        }
-        for p in policies
-    ]
-
-
-@router.get("/{zone_id}/claims")
-async def get_zone_claims(zone_id: str, db: AsyncSession = Depends(get_db)):
-    """Claims history for a zone."""
-    result = await db.execute(
-        select(Claim).where(Claim.zone_id == zone_id).order_by(Claim.created_at.desc())
-    )
-    claims = result.scalars().all()
-    return [ClaimResponse.model_validate(c) for c in claims]
 
 
 def update_signal_cache(zone_id: str, data: dict):

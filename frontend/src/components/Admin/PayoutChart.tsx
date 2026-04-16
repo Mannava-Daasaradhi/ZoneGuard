@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import {
   BarChart,
   Bar,
@@ -10,7 +9,6 @@ import {
   Cell,
 } from 'recharts';
 import { PAYOUT_CHART_DATA, getPayoutTotal, formatCurrency } from '../../data/chartMockData';
-import { getPayoutsOverTime } from '../../services/api';
 
 interface TooltipPayload {
   value: number;
@@ -38,41 +36,16 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
       <div className="flex items-center gap-2">
         <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
         <span className="text-white font-bold text-lg">
-          {'\u20B9'}{data.amount.toLocaleString('en-IN')}
+          ₹{data.amount.toLocaleString('en-IN')}
         </span>
       </div>
     </div>
   );
 };
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 export default function PayoutChart() {
-  const [apiData, setApiData] = useState<{ day: string; date: string; amount: number }[] | null>(null);
-
-  useEffect(() => {
-    getPayoutsOverTime(7)
-      .then((data) => {
-        if (data && data.length > 0) {
-          const mapped = data.map((d) => {
-            const dt = new Date(d.date);
-            return {
-              day: DAYS[dt.getDay()],
-              date: d.date,
-              amount: d.total_amount,
-            };
-          });
-          setApiData(mapped);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  const chartData = apiData || PAYOUT_CHART_DATA;
-  const totalPayout = apiData
-    ? apiData.reduce((sum, d) => sum + d.amount, 0)
-    : getPayoutTotal();
-  const avgDaily = Math.round(totalPayout / Math.max(chartData.length, 1));
+  const totalPayout = getPayoutTotal();
+  const avgDaily = Math.round(totalPayout / 7);
 
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
@@ -95,7 +68,7 @@ export default function PayoutChart() {
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={chartData}
+            data={PAYOUT_CHART_DATA}
             margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
           >
             <defs>
@@ -117,7 +90,7 @@ export default function PayoutChart() {
               tickLine={false}
               tick={{ fill: '#64748b', fontSize: 12 }}
               dx={-8}
-              tickFormatter={(value) => `\u20B9${(value / 1000).toFixed(0)}K`}
+              tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: '#1e293b' }} />
             <Bar
@@ -125,7 +98,7 @@ export default function PayoutChart() {
               radius={[4, 4, 0, 0]}
               maxBarSize={48}
             >
-              {chartData.map((_, index) => (
+              {PAYOUT_CHART_DATA.map((_, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill="url(#payoutGradient)"
@@ -139,8 +112,8 @@ export default function PayoutChart() {
 
       {/* Daily breakdown mini-stats */}
       <div className="grid grid-cols-7 gap-1 mt-4 pt-4 border-t border-slate-700">
-        {chartData.map((day) => (
-          <div key={day.day + day.date} className="text-center">
+        {PAYOUT_CHART_DATA.map((day) => (
+          <div key={day.day} className="text-center">
             <p className="text-slate-500 text-[10px]">{day.day}</p>
             <p className="text-slate-300 text-xs font-medium">
               {formatCurrency(day.amount)}

@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import ChatMessage from './ChatMessage'
 import ChatInput from './ChatInput'
 import { findResponse, WELCOME_MESSAGE } from '../../data/chatResponses'
-import { sendChatMessage } from '../../services/api'
 
 interface Message {
   id: string
@@ -41,7 +40,7 @@ export default function ChatWidget() {
     }
   }, [messages, isOpen])
 
-  const handleSend = useCallback(async (text: string) => {
+  const handleSend = useCallback((text: string) => {
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       text,
@@ -51,23 +50,18 @@ export default function ChatWidget() {
     setMessages((prev) => [...prev, userMessage])
     setIsTyping(true)
 
-    let response: string
-    try {
-      const result = await sendChatMessage(text)
-      response = result.response
-    } catch {
-      // Fallback to local keyword matching
-      response = findResponse(text)
-    }
-
-    const botMessage: Message = {
-      id: `bot-${Date.now()}`,
-      text: response,
-      isBot: true,
-      timestamp: new Date(),
-    }
-    setMessages((prev) => [...prev, botMessage])
-    setIsTyping(false)
+    // Simulate typing delay for natural feel
+    setTimeout(() => {
+      const response = findResponse(text)
+      const botMessage: Message = {
+        id: `bot-${Date.now()}`,
+        text: response,
+        isBot: true,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, botMessage])
+      setIsTyping(false)
+    }, 700)
   }, [])
 
   const handleQuickAction = useCallback((query: string) => {
@@ -117,7 +111,7 @@ export default function ChatWidget() {
               <h3 className="text-white font-semibold text-sm">ZoneGuard Assistant</h3>
               <p className="text-emerald-100 text-xs flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
-                AI-powered · Ready to help
+                Online · Ready to help
               </p>
             </div>
             <button
@@ -136,7 +130,7 @@ export default function ChatWidget() {
             {messages.map((msg) => (
               <ChatMessage key={msg.id} message={msg.text} isBot={msg.isBot} timestamp={msg.timestamp} />
             ))}
-
+            
             {isTyping && (
               <div className="flex justify-start mb-3">
                 <div className="bg-slate-100 rounded-xl rounded-tl-sm px-4 py-3">
@@ -148,7 +142,7 @@ export default function ChatWidget() {
                 </div>
               </div>
             )}
-
+            
             <div ref={messagesEndRef} />
           </div>
 

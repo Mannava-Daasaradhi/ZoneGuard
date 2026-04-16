@@ -7,7 +7,7 @@ the full QuadSignal → Claim → Payout pipeline in real-time.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_
 from db.database import get_db
 from models.zone import Zone
 from models.simulation import SimulationEvent
@@ -23,7 +23,6 @@ from ml.zone_twin import counterfactual_inactivity
 from services.exclusion_engine import evaluate_claim_exclusions
 from integrations.gemini import generate_audit_report
 from integrations.payout_sim import process_payout
-from models.notification import create_notification, NotificationType
 from routers.zones import update_signal_cache
 from pydantic import BaseModel
 from datetime import datetime, timezone, timedelta
@@ -176,22 +175,11 @@ async def trigger_disruption(payload: SimulatorTrigger, db: AsyncSession = Depen
             days_since_policy_start=max(0, (datetime.now(timezone.utc) - policy.coverage_start).days) if policy.coverage_start else 5,
         )
 
-        # Compute consecutive disruption days from recent claims
-        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-        recent_claims_result = await db.execute(
-            select(func.count(Claim.id))
-            .where(Claim.rider_id == rider.id)
-            .where(Claim.status.in_(["approved", "pending_review"]))
-            .where(Claim.created_at >= week_ago)
-        )
-        consecutive_days = recent_claims_result.scalar() or 0
-
         # Exclusion check
         excl_check = evaluate_claim_exclusions(
             claim_data={"rider_id": rider.id, "zone_id": payload.zone_id},
             policy_data={"coverage_start": policy.coverage_start},
             fraud_score=fraud["score"],
-            consecutive_disruption_days=consecutive_days,
         )
 
         # Determine status
@@ -255,27 +243,6 @@ async def trigger_disruption(payload: SimulatorTrigger, db: AsyncSession = Depen
                 "id": payout.id, "rider_id": rider.id, "amount": payout_amount,
                 "upi_ref": payout_result["upi_ref"], "status": payout_result["status"],
             })
-
-    # Fire notifications for each rider
-    for claim_info in claims_created:
-        rider_id = claim_info["rider_id"]
-        status = claim_info["status"]
-
-        await create_notification(
-            db=db, rider_id=rider_id, type=NotificationType.CLAIM_CREATED,
-            title="Claim Auto-Triggered",
-            message=f"{scenario['name']} detected in {zone.name}. Claim {status}. Recommended payout: ₹{claim_info['recommended_payout']:,}.",
-            metadata={"claim_id": claim_info["id"], "zone_id": payload.zone_id, "scenario": payload.scenario},
-        )
-
-    for payout_info in payouts_created:
-        rider_id = payout_info["rider_id"]
-        await create_notification(
-            db=db, rider_id=rider_id, type=NotificationType.PAYOUT_SENT,
-            title="Payout Credited",
-            message=f"₹{payout_info['amount']:,} credited to your UPI ({payout_info['upi_ref']}). {scenario['name']} coverage.",
-            metadata={"payout_id": payout_info["id"], "upi_ref": payout_info["upi_ref"]},
-        )
 
     await db.commit()
 

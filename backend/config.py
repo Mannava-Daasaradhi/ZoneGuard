@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     openweathermap_api_key: str = ""
     gemini_api_key: str = ""
-    jwt_secret: str = "zoneguard-demo-secret-2026"
     cors_origins: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000,https://zenith-tribe.github.io"
 
     class Config:

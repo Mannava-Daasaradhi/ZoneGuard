@@ -5,10 +5,7 @@ Triggered for MEDIUM-confidence claims. Synthesizes signal data,
 historical context, and exclusion checks into plain-language audit reports.
 """
 
-import logging
 from config import get_settings
-
-logger = logging.getLogger(__name__)
 
 
 async def generate_audit_report(claim_data: dict) -> dict:
@@ -27,11 +24,9 @@ async def generate_audit_report(claim_data: dict) -> dict:
             report_text = response.text
             model_used = "gemini-1.5-flash"
         except Exception as e:
-            logger.warning(f"Gemini API call failed: {e} — using fallback template")
             report_text = _fallback_report(claim_data)
             model_used = "fallback_template"
     else:
-        logger.warning("Gemini API key not set — using fallback template")
         report_text = _fallback_report(claim_data)
         model_used = "fallback_template"
 

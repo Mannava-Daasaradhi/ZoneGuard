@@ -26,7 +26,7 @@ interface NotificationContextValue {
 // eslint-disable-next-line react-refresh/only-export-components
 export const NotificationContext = createContext<NotificationContextValue | null>(null)
 
-import { API_URL } from '../../services/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 interface Props {
   children: ReactNode

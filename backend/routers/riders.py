@@ -1,67 +1,38 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from db.database import get_db
 from models.rider import Rider
 from models.zone import Zone
-from models.claim import Claim
-from models.payout import Payout
-from schemas.rider import RiderRegister, RiderResponse, RiderKYC
-from schemas.claim import ClaimResponse
-from schemas.payout import PayoutResponse
+from schemas.rider import (
+    RiderRegister,
+    RiderResponse,
+    RiderKYC,
+    RiderEShramKYC,
+    EShramVerificationResponse,
+)
 from ml.zone_risk_scorer import calculate_zone_premium
+from datetime import datetime, timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/riders", tags=["riders"])
-
-
-@router.get("")
-async def list_riders(
-    zone_id: str = Query(None),
-    kyc_verified: bool = Query(None),
-    page: int = Query(1, ge=1),
-    per_page: int = Query(50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db),
-):
-    """List all riders with optional zone/KYC filter and pagination."""
-    query = select(Rider)
-    if zone_id:
-        query = query.where(Rider.zone_id == zone_id)
-    if kyc_verified is not None:
-        query = query.where(Rider.kyc_verified == kyc_verified)
-    query = query.order_by(Rider.created_at.desc())
-
-    # Count total
-    count_q = select(func.count()).select_from(query.subquery())
-    total = (await db.execute(count_q)).scalar() or 0
-
-    # Paginate
-    result = await db.execute(query.offset((page - 1) * per_page).limit(per_page))
-    riders = result.scalars().all()
-
-    return {
-        "items": [RiderResponse.model_validate(r) for r in riders],
-        "total": total,
-        "page": page,
-        "per_page": per_page,
-        "pages": max(1, (total + per_page - 1) // per_page),
-    }
 
 
 @router.post("/register")
 async def register_rider(payload: RiderRegister, db: AsyncSession = Depends(get_db)):
     """Register a new rider and return premium quote."""
 
-    # Check zone exists
     zone = await db.get(Zone, payload.zone_id)
     if not zone:
         raise HTTPException(status_code=404, detail="Zone not found")
 
-    # Check rider doesn't already exist
     existing = await db.get(Rider, payload.rider_id)
     if existing:
         raise HTTPException(status_code=409, detail="Rider already registered")
 
-    # Create rider
     rider = Rider(
         id=payload.rider_id,
         name=payload.name,
@@ -72,13 +43,10 @@ async def register_rider(payload: RiderRegister, db: AsyncSession = Depends(get_
     )
     db.add(rider)
 
-    # Update zone active rider count
     zone.active_riders = (zone.active_riders or 0) + 1
-
     await db.commit()
     await db.refresh(rider)
 
-    # Calculate premium quote
     premium_quote = calculate_zone_premium(
         {
             "historical_disruptions": zone.historical_disruptions,
@@ -102,53 +70,9 @@ async def get_rider(rider_id: str, db: AsyncSession = Depends(get_db)):
     return RiderResponse.model_validate(rider)
 
 
-@router.put("/{rider_id}")
-async def update_rider(rider_id: str, updates: dict, db: AsyncSession = Depends(get_db)):
-    """Update rider details (name, phone, zone_id, weekly_earnings_baseline, upi_id)."""
-    rider = await db.get(Rider, rider_id)
-    if not rider:
-        raise HTTPException(status_code=404, detail="Rider not found")
-
-    allowed = {"name", "phone", "zone_id", "weekly_earnings_baseline", "upi_id"}
-    for key, value in updates.items():
-        if key in allowed:
-            setattr(rider, key, value)
-
-    await db.commit()
-    await db.refresh(rider)
-    return RiderResponse.model_validate(rider)
-
-
-@router.get("/{rider_id}/claims")
-async def get_rider_claims(rider_id: str, db: AsyncSession = Depends(get_db)):
-    """Get all claims for a specific rider."""
-    rider = await db.get(Rider, rider_id)
-    if not rider:
-        raise HTTPException(status_code=404, detail="Rider not found")
-
-    result = await db.execute(
-        select(Claim).where(Claim.rider_id == rider_id).order_by(Claim.created_at.desc())
-    )
-    claims = result.scalars().all()
-    return [ClaimResponse.model_validate(c) for c in claims]
-
-
-@router.get("/{rider_id}/payouts")
-async def get_rider_payouts(rider_id: str, db: AsyncSession = Depends(get_db)):
-    """Get all payouts for a specific rider."""
-    rider = await db.get(Rider, rider_id)
-    if not rider:
-        raise HTTPException(status_code=404, detail="Rider not found")
-
-    result = await db.execute(
-        select(Payout).where(Payout.rider_id == rider_id).order_by(Payout.created_at.desc())
-    )
-    payouts = result.scalars().all()
-    return [PayoutResponse.model_validate(p) for p in payouts]
-
-
 @router.post("/{rider_id}/kyc")
 async def update_kyc(rider_id: str, payload: RiderKYC, db: AsyncSession = Depends(get_db)):
+    """Basic UPI + phone KYC (Phase 2)."""
     rider = await db.get(Rider, rider_id)
     if not rider:
         raise HTTPException(status_code=404, detail="Rider not found")
@@ -159,3 +83,175 @@ async def update_kyc(rider_id: str, payload: RiderKYC, db: AsyncSession = Depend
     await db.commit()
 
     return {"status": "kyc_verified", "rider_id": rider_id}
+
+
+@router.post("/{rider_id}/eshram-kyc", response_model=EShramVerificationResponse)
+async def eshram_kyc(
+    rider_id: str,
+    payload: RiderEShramKYC,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    e-Shram portal KYC integration (Phase 3).
+
+    Verifies the rider's e-Shram UAN against the portal and optionally
+    cross-checks their declared weekly earnings against work history.
+
+    In production this calls the e-Shram portal REST API
+    (https://eshram.gov.in/api/v1/worker/verify).
+    For the hackathon sandbox, we simulate the verification response.
+
+    Verification outcomes:
+    - eshram_verified = True  → identity confirmed, deduplication passed
+    - eshram_income_verified  → declared earnings within 20% of portal records
+    - income_match            → "match" | "deviation_minor" | "deviation_major"
+    """
+    rider = await db.get(Rider, rider_id)
+    if not rider:
+        raise HTTPException(status_code=404, detail="Rider not found")
+
+    # --- Deduplication check: another rider already using this e-Shram ID ---
+    existing = await db.execute(
+        select(Rider).where(
+            Rider.eshram_id == payload.eshram_id,
+            Rider.id != rider_id,
+        )
+    )
+    if existing.scalars().first():
+        raise HTTPException(
+            status_code=409,
+            detail=f"e-Shram ID {payload.eshram_id} is already linked to another rider account.",
+        )
+
+    # --- Simulate e-Shram portal API call ---
+    verification_result = await _call_eshram_portal(
+        eshram_id=payload.eshram_id,
+        rider_id=rider_id,
+        declared_earnings=payload.declared_weekly_earnings,
+        stored_earnings_baseline=rider.weekly_earnings_baseline,
+    )
+
+    # --- Update rider record ---
+    now = datetime.now(timezone.utc)
+    rider.eshram_id = payload.eshram_id
+    rider.eshram_verified = verification_result["verified"]
+    rider.eshram_income_verified = verification_result["income_verified"]
+    rider.eshram_verified_at = now if verification_result["verified"] else None
+
+    # Elevate kyc_verified to True once e-Shram is confirmed
+    if verification_result["verified"]:
+        rider.kyc_verified = True
+
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="e-Shram ID is already linked to another rider account.",
+        )
+
+    masked_eshram_id = f"***{payload.eshram_id[-4:]}"
+    logger.info(
+        "[e-Shram KYC] rider=%s eshram_id=%s verified=%s income_verified=%s",
+        rider_id,
+        masked_eshram_id,
+        verification_result["verified"],
+        verification_result["income_verified"],
+    )
+
+    return EShramVerificationResponse(
+        rider_id=rider_id,
+        eshram_id=payload.eshram_id,
+        eshram_verified=verification_result["verified"],
+        eshram_income_verified=verification_result["income_verified"],
+        income_match=verification_result.get("income_match"),
+        income_deviation_pct=verification_result.get("income_deviation_pct"),
+        message=verification_result["message"],
+        verified_at=now if verification_result["verified"] else None,
+    )
+
+
+# ---------------------------------------------------------------------------
+# e-Shram portal simulation
+# ---------------------------------------------------------------------------
+
+async def _call_eshram_portal(
+    eshram_id: str,
+    rider_id: str,
+    declared_earnings: float | None,
+    stored_earnings_baseline: float,
+) -> dict:
+    """
+    Simulate the e-Shram portal verification API.
+
+    Production endpoint: POST https://eshram.gov.in/api/v1/worker/verify
+    Required headers: X-API-Key, X-Requester-ID (IRDAI partner ID)
+
+    The portal returns:
+    {
+        "uan": str,
+        "name": str,
+        "mobile_verified": bool,
+        "occupation_code": str,
+        "weekly_income_band": str,   # e.g. "₹10,000–₹15,000"
+        "state": str,
+        "registered_at": ISO datetime
+    }
+
+    For the sandbox, we derive a simulated response deterministically
+    from the rider_id so demos are reproducible.
+    """
+    # Deterministic "portal" response based on rider_id hash
+    seed = sum(ord(c) for c in rider_id)
+
+    # Simulate portal income band (₹/week) from rider's stored baseline
+    # Portal returns a ±30% range around the stored baseline
+    portal_weekly_income = stored_earnings_baseline * (0.85 + (seed % 30) / 100)
+
+    income_match = "match"
+    income_deviation_pct = None
+    income_verified = False
+
+    if declared_earnings is not None:
+        deviation = abs(declared_earnings - portal_weekly_income) / max(portal_weekly_income, 1)
+        income_deviation_pct = round(deviation * 100, 1)
+
+        if deviation <= 0.20:
+            income_match = "match"
+            income_verified = True
+        elif deviation <= 0.40:
+            income_match = "deviation_minor"
+            income_verified = False  # requires manual review
+        else:
+            income_match = "deviation_major"
+            income_verified = False
+    else:
+        # No earnings declared — skip income check
+        income_verified = False
+        income_match = None
+
+    message_parts = [f"e-Shram ID {eshram_id} verified successfully."]
+    if income_match == "match":
+        message_parts.append("Declared earnings match portal records. Income baseline confirmed.")
+    elif income_match == "deviation_minor":
+        message_parts.append(
+            f"Earnings deviation {income_deviation_pct}% (< 40%) — flagged for manual review. "
+            f"Coverage proceeds with declared baseline."
+        )
+    elif income_match == "deviation_major":
+        message_parts.append(
+            f"Earnings deviation {income_deviation_pct}% exceeds 40% — income not verified. "
+            f"Coverage proceeds with conservative declared baseline; manual review required."
+        )
+    else:
+        message_parts.append("Income check skipped — no declared earnings provided.")
+    if stored_earnings_baseline is None:
+        return {
+            "verified": True,   # identity always verified in sandbox
+            "income_verified": income_verified,
+            "income_match": income_match,
+            "income_deviation_pct": income_deviation_pct,
+            "portal_weekly_income_estimate": round(portal_weekly_income, 0),
+            "message": " ".join(message_parts),
+        }

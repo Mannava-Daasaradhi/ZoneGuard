@@ -241,3 +241,83 @@ export interface SimulationResult {
   payouts: SimulationPayout[];
   signals: ZoneSignalData;
 }
+
+// Phase 3 types
+
+export interface EShramVerificationResponse {
+  rider_id: string;
+  eshram_id: string;
+  eshram_verified: boolean;
+  eshram_income_verified: boolean;
+  income_match?: 'match' | 'deviation_minor' | 'deviation_major' | null;
+  income_deviation_pct?: number | null;
+  message: string;
+  verified_at?: string | null;
+}
+
+export interface FederatedRoundSummary {
+  round: number;
+  participating_cities: string[];
+  n_clients: number;
+  total_training_samples: number;
+  global_weight_norm: number;
+  elapsed_seconds: number;
+  status: string;
+}
+
+export interface FederatedRoundResult {
+  status: string;
+  federated_training: {
+    rounds_completed: number;
+    round_summaries: FederatedRoundSummary[];
+    final_weight_norm: number;
+    total_samples_across_clients: number;
+    cities: string[];
+    architecture: {
+      algorithm: string;
+      base_model: string;
+      n_estimators: number;
+      contamination: number;
+      privacy_guarantee: string;
+      production_transport: string;
+      demo_mode: string;
+    };
+  };
+  timestamp: string;
+}
+
+export interface RingAnalysis {
+  zone_id: string;
+  claim_count: number;
+  verdict: 'genuine' | 'suspicious' | 'ring_detected' | 'insufficient_data';
+  confidence: number;
+  ring_signals: string[];
+  inter_arrival: {
+    mean_gap_seconds?: number;
+    std_gap_seconds?: number;
+    min_gap_seconds?: number;
+    cv?: number;
+  };
+  clustering_coefficient: number;
+  spike: {
+    max_spike_count: number;
+    spike_detected: boolean;
+    spike_window_minutes: number;
+    spike_threshold: number;
+  };
+  poisson_z_score?: number | null;
+  recommendation: string;
+}
+
+export interface RingDetectionDemoResult {
+  demo: string;
+  genuine_disruption: {
+    description: string;
+    analysis: RingAnalysis;
+  };
+  coordinated_ring: {
+    description: string;
+    analysis: RingAnalysis;
+  };
+  takeaway: string;
+}

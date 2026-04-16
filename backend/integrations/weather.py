@@ -2,11 +2,8 @@
 OpenWeatherMap integration — Free tier API for current weather + air pollution.
 """
 
-import logging
 import httpx
 from config import get_settings
-
-logger = logging.getLogger(__name__)
 
 OWM_BASE = "https://api.openweathermap.org/data/2.5"
 
@@ -17,7 +14,6 @@ async def get_current_weather(lat: float, lng: float) -> dict:
     key = settings.openweathermap_api_key
 
     if not key:
-        logger.warning("OpenWeatherMap API key not set — using simulated weather")
         return _simulated_weather(lat, lng)
 
     async with httpx.AsyncClient(timeout=10) as client:
@@ -51,8 +47,7 @@ async def get_current_weather(lat: float, lng: float) -> dict:
                 "description": weather.get("weather", [{}])[0].get("description", "clear"),
                 "source": "openweathermap",
             }
-        except Exception as e:
-            logger.warning(f"OpenWeatherMap API call failed: {e} — falling back to simulation")
+        except Exception:
             return _simulated_weather(lat, lng)
 
 

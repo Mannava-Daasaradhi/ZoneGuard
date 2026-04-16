@@ -21,7 +21,6 @@ from models import (
     AuditLog, PremiumCalculation, SimulationEvent,
 )
 from services.exclusion_engine import EXCLUSION_TYPES
-from ml.zone_twin import ZONE_BASELINES
 from datetime import datetime, timedelta, timezone
 import uuid
 
@@ -69,9 +68,6 @@ async def seed():
         print("Seeding zones...")
         for z in ZONES:
             zone = Zone(**z)
-            # Populate zone_baselines from ZoneTwin historical data
-            if z["id"] in ZONE_BASELINES:
-                zone.zone_baselines = ZONE_BASELINES[z["id"]]
             session.add(zone)
         await session.flush()
 

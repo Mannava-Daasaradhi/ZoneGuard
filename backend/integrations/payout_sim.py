@@ -2,12 +2,9 @@
 Dummy UPI payout gateway simulator.
 """
 
-import logging
 import uuid
 import asyncio
 from datetime import datetime, timezone
-
-logger = logging.getLogger(__name__)
 
 
 async def process_payout(rider_id: str, amount: float, upi_id: str = None) -> dict:
@@ -21,9 +18,6 @@ async def process_payout(rider_id: str, amount: float, upi_id: str = None) -> di
     # 95% success rate
     import random
     success = random.random() < 0.95
-
-    if not success:
-        logger.warning(f"Payout {upi_ref} for rider {rider_id} failed (gateway timeout)")
 
     return {
         "upi_ref": upi_ref,

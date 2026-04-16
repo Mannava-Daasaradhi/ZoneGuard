@@ -9,7 +9,6 @@ from models.rider import Rider
 from schemas.policy import PolicyCreate, PolicyResponse, ExclusionResponse
 from services.exclusion_engine import get_all_exclusion_types
 from ml.zone_risk_scorer import calculate_zone_premium
-from models.notification import create_notification, NotificationType
 from datetime import datetime, timedelta, timezone
 import uuid
 
@@ -82,14 +81,6 @@ async def create_policy(payload: PolicyCreate, db: AsyncSession = Depends(get_db
         created_at=datetime.now(timezone.utc),
     )
     db.add(premium_payment)
-
-    # Notify rider
-    await create_notification(
-        db=db, rider_id=payload.rider_id, type=NotificationType.POLICY_ACTIVATED,
-        title="Policy Activated",
-        message=f"Your ZoneGuard policy for {zone.name} is active. Premium: ₹{weekly_premium}/week. Max payout: ₹{premium_info['max_payout']:,}.",
-        metadata={"policy_id": policy.id, "zone_id": payload.zone_id},
-    )
 
     await db.commit()
     await db.refresh(policy)

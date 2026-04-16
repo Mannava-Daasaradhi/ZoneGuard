@@ -1,62 +1,7 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { API_URL } from '../services/api'
 
 export default function LandingPage() {
   const navigate = useNavigate()
-  const [showLogin, setShowLogin] = useState(false)
-  const [loginTarget, setLoginTarget] = useState<'rider' | 'admin'>('rider')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [loginError, setLoginError] = useState('')
-  const [loggingIn, setLoggingIn] = useState(false)
-
-  const handlePersonaClick = (target: 'rider' | 'admin') => {
-    // If already logged in, navigate directly
-    const token = localStorage.getItem('zoneguard_token')
-    if (token) {
-      navigate(target === 'rider' ? '/rider' : '/admin')
-      return
-    }
-    setLoginTarget(target)
-    setUsername(target === 'rider' ? 'rider' : 'admin')
-    setPassword(target === 'rider' ? 'rider123' : 'admin123')
-    setLoginError('')
-    setShowLogin(true)
-  }
-
-  const handleLogin = async () => {
-    setLoggingIn(true)
-    setLoginError('')
-    try {
-      const res = await fetch(`${API_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.detail || 'Login failed')
-      }
-      const data = await res.json()
-      localStorage.setItem('zoneguard_token', data.token)
-      localStorage.setItem('zoneguard_role', data.role)
-      localStorage.setItem('zoneguard_user', data.name)
-      setShowLogin(false)
-      navigate(loginTarget === 'rider' ? '/rider' : '/admin')
-    } catch (err) {
-      // Auth might be disabled — navigate anyway
-      setShowLogin(false)
-      navigate(loginTarget === 'rider' ? '/rider' : '/admin')
-    } finally {
-      setLoggingIn(false)
-    }
-  }
-
-  const handleSkipLogin = () => {
-    setShowLogin(false)
-    navigate(loginTarget === 'rider' ? '/rider' : '/admin')
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center px-4 relative overflow-hidden">
@@ -95,7 +40,7 @@ export default function LandingPage() {
       <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 w-full max-w-2xl">
         {/* Rider card */}
         <button
-          onClick={() => handlePersonaClick('rider')}
+          onClick={() => navigate('/rider')}
           className="group bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 sm:p-8 text-left hover:bg-amber-500/20 hover:border-amber-400 transition-all duration-200 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 active:translate-y-0"
         >
           <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4 group-hover:bg-amber-500/30 transition-colors text-2xl">
@@ -115,7 +60,7 @@ export default function LandingPage() {
 
         {/* Insurer card */}
         <button
-          onClick={() => handlePersonaClick('admin')}
+          onClick={() => navigate('/admin')}
           className="group bg-blue-500/10 border border-blue-500/30 rounded-2xl p-6 sm:p-8 text-left hover:bg-blue-500/20 hover:border-blue-400 transition-all duration-200 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 active:translate-y-0"
         >
           <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 group-hover:bg-blue-500/30 transition-colors text-2xl">
@@ -158,61 +103,6 @@ export default function LandingPage() {
           New rider? Get covered in 90 seconds →
         </button>
       </div>
-
-      {/* Login Modal */}
-      {showLogin && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm">
-            <h3 className="text-white font-bold text-lg mb-1">
-              {loginTarget === 'rider' ? 'Rider Login' : 'Admin Login'}
-            </h3>
-            <p className="text-slate-400 text-xs mb-4">Demo credentials are pre-filled</p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-slate-400 text-xs block mb-1">Username</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="text-slate-400 text-xs block mb-1">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            {loginError && <p className="text-red-400 text-xs mt-2">{loginError}</p>}
-
-            <div className="flex gap-2 mt-5">
-              <button
-                onClick={handleLogin}
-                disabled={loggingIn}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {loggingIn ? 'Signing in...' : 'Sign In'}
-              </button>
-              <button
-                onClick={handleSkipLogin}
-                className="px-4 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm py-2.5 rounded-lg transition-colors"
-              >
-                Skip
-              </button>
-            </div>
-
-            <p className="text-slate-500 text-xs text-center mt-3">
-              Auth is optional — skip to proceed without login
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
