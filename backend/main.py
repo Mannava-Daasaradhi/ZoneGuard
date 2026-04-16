@@ -69,6 +69,9 @@ app.include_router(notifications.router)
 # Feature 14 — ZoneGuard Pulse
 from features.feature_14.pulse_router import router as pulse_router
 app.include_router(pulse_router)
+from backend.features.feature_12.autopilot_router import router as f12_router
+
+app.include_router(f12_router, prefix="/api/v1", tags=["SmartClaim Autopilot"])
 
 
 @app.get("/")
