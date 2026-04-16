@@ -17,3 +17,7 @@ alembic==1.14.0
 python-multipart==0.0.18
 apscheduler>=3.10.0
 PyJWT>=2.8.0
+slowapi>=0.1.9
+pytest>=8.0.0
+pytest-asyncio>=0.24.0
+pytest-cov>=5.0.0

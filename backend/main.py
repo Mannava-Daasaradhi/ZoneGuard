@@ -1,10 +1,21 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import logging
 
 from config import get_settings
-from routers import riders, zones, policies, claims, signals, payouts, admin, simulator, premium, notifications, chat, auth
+from routers import riders, zones, policies, claims, signals, payouts, admin, simulator, premium, notifications, chat, auth, demo
+
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+    HAS_SLOWAPI = True
+except ImportError:
+    limiter = None
+    HAS_SLOWAPI = False
 
 # Configure logging
 logging.basicConfig(
@@ -46,6 +57,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Rate limiting
+if HAS_SLOWAPI:
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -68,6 +84,7 @@ app.include_router(premium.router)
 app.include_router(notifications.router)
 app.include_router(chat.router)
 app.include_router(auth.router)
+app.include_router(demo.router)
 
 
 @app.get("/")
@@ -97,6 +114,44 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy", "env": settings.app_env}
+
+
+@app.get("/health/detailed")
+async def health_detailed():
+    """Detailed health check: DB connectivity, API key availability."""
+    checks = {}
+
+    # DB check
+    try:
+        from db.database import async_session
+        from sqlalchemy import text
+        async with async_session() as session:
+            await session.execute(text("SELECT 1"))
+        checks["database"] = {"status": "ok"}
+    except Exception as e:
+        checks["database"] = {"status": "error", "detail": str(e)}
+
+    # Weather API key
+    checks["openweathermap"] = {
+        "status": "ok" if settings.openweathermap_api_key else "missing",
+        "has_key": bool(settings.openweathermap_api_key),
+    }
+
+    # Gemini API key
+    checks["gemini"] = {
+        "status": "ok" if settings.gemini_api_key else "missing",
+        "has_key": bool(settings.gemini_api_key),
+    }
+
+    all_ok = all(
+        c.get("status") == "ok" for c in checks.values()
+    )
+
+    return {
+        "status": "healthy" if all_ok else "degraded",
+        "env": settings.app_env,
+        "checks": checks,
+    }
 
 
 # Mangum handler for AWS Lambda (if deployed there)

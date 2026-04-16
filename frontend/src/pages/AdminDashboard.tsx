@@ -10,6 +10,7 @@ import ClaimsChart from '../components/Admin/ClaimsChart'
 import PayoutChart from '../components/Admin/PayoutChart'
 import LossRatioWidget from '../components/Admin/LossRatioWidget'
 import { ClaimSkeleton } from '../components/shared/Skeleton'
+import DemoTour from '../components/shared/DemoTour'
 import type { KPI, ZoneSignalData, SimulationResult, RawApiZone, RawApiClaim } from '../types'
 
 export default function AdminDashboard() {
@@ -165,12 +166,13 @@ export default function AdminDashboard() {
         </div>
       </header>
 
+      <DemoTour />
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
-        <KPIStrip kpis={kpis} />
+        <div data-tour="kpi-strip"><KPIStrip kpis={kpis} /></div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Leaflet Choropleth Map */}
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 sm:p-5">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 sm:p-5" data-tour="zone-map">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
               <div>
                 <h2 className="text-white font-bold text-base sm:text-lg">Bengaluru Zone Risk Map</h2>
@@ -216,17 +218,17 @@ export default function AdminDashboard() {
           </div>
 
           {/* QuadSignal Panel */}
-          <QuadSignalPanel />
+          <div data-tour="signal-panel"><QuadSignalPanel /></div>
         </div>
 
         {/* Disruption Simulator */}
-        <DisruptionSimulator
+        <div data-tour="simulator"><DisruptionSimulator
           zones={normalizedZones.map(z => ({ id: z.id, name: z.name }))}
           onSimulationTriggered={handleSimulation}
-        />
+        /></div>
 
         {/* Analytics Charts Section */}
-        <div className="space-y-5">
+        <div className="space-y-5" data-tour="analytics">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-white font-bold text-lg">Analytics</h2>
@@ -255,7 +257,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Claims Queue */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 sm:p-5">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 sm:p-5" data-tour="claims-queue">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div>
               <h2 className="text-white font-bold text-base sm:text-lg">Claims Queue</h2>

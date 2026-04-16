@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from db.database import get_db
 from models.claim import Claim
 from models.payout import Payout
@@ -8,9 +8,52 @@ from models.audit import AuditLog
 from models.rider import Rider
 from schemas.claim import ClaimResponse, ClaimReview
 from integrations.payout_sim import process_payout
+from integrations.gemini import generate_audit_report
 from datetime import datetime, timezone
 
 router = APIRouter(prefix="/api/v1/claims", tags=["claims"])
+
+
+@router.get("/stats")
+async def claim_stats(db: AsyncSession = Depends(get_db)):
+    """Aggregate claim statistics: approval rate, avg payout, velocity."""
+    total_result = await db.execute(select(func.count(Claim.id)))
+    total = total_result.scalar() or 0
+
+    approved_result = await db.execute(
+        select(func.count(Claim.id)).where(Claim.status == "approved")
+    )
+    approved = approved_result.scalar() or 0
+
+    rejected_result = await db.execute(
+        select(func.count(Claim.id)).where(Claim.status == "rejected")
+    )
+    rejected = rejected_result.scalar() or 0
+
+    pending_result = await db.execute(
+        select(func.count(Claim.id)).where(Claim.status.in_(["pending_review", "held"]))
+    )
+    pending = pending_result.scalar() or 0
+
+    avg_payout_result = await db.execute(
+        select(func.avg(Claim.actual_payout)).where(Claim.actual_payout.isnot(None))
+    )
+    avg_payout = avg_payout_result.scalar() or 0
+
+    avg_fraud_result = await db.execute(
+        select(func.avg(Claim.fraud_score)).where(Claim.fraud_score.isnot(None))
+    )
+    avg_fraud = avg_fraud_result.scalar() or 0
+
+    return {
+        "total": total,
+        "approved": approved,
+        "rejected": rejected,
+        "pending": pending,
+        "approval_rate": round(approved / total * 100, 1) if total else 0,
+        "avg_payout": round(float(avg_payout), 2),
+        "avg_fraud_score": round(float(avg_fraud), 3),
+    }
 
 
 @router.get("")
@@ -53,6 +96,90 @@ async def get_claim(claim_id: str, db: AsyncSession = Depends(get_db)):
             "model_used": audit.model_used if audit else None,
             "generated_at": audit.created_at.isoformat() if audit else None,
         } if audit else None,
+    }
+
+
+@router.get("/{claim_id}/audit-report")
+async def get_claim_audit_report(claim_id: str, db: AsyncSession = Depends(get_db)):
+    """Fetch or generate a Gemini audit report for a claim."""
+    claim = await db.get(Claim, claim_id)
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    # Check if audit report already exists
+    existing = await db.execute(
+        select(AuditLog)
+        .where(AuditLog.claim_id == claim_id)
+        .where(AuditLog.event_type == "gemini_audit")
+        .order_by(AuditLog.created_at.desc())
+    )
+    audit = existing.scalars().first()
+
+    if audit:
+        return {
+            "claim_id": claim_id,
+            "content": audit.content,
+            "model_used": audit.model_used,
+            "generated_at": audit.created_at.isoformat(),
+        }
+
+    # Generate new audit report
+    report = await generate_audit_report({
+        "claim_id": claim_id,
+        "zone_id": claim.zone_id,
+        "confidence": claim.confidence,
+        "signals_fired": claim.exclusion_check.get("signals_fired", 3) if claim.exclusion_check else 3,
+        "exclusion_check": claim.exclusion_check,
+        "fraud_score": claim.fraud_score,
+        "signal_details": claim.exclusion_check.get("signal_details", {}) if claim.exclusion_check else {},
+    })
+
+    # Store the audit report
+    audit_log = AuditLog(
+        claim_id=claim_id,
+        event_type="gemini_audit",
+        content=report["report"],
+        model_used=report["model_used"],
+        generated_by="gemini",
+    )
+    db.add(audit_log)
+    await db.commit()
+
+    return {
+        "claim_id": claim_id,
+        "content": report["report"],
+        "model_used": report["model_used"],
+        "generated_at": audit_log.created_at.isoformat() if audit_log.created_at else datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@router.post("/{claim_id}/challenge")
+async def challenge_claim(claim_id: str, db: AsyncSession = Depends(get_db)):
+    """Rider contests a rejected claim. Flips status back to pending_review."""
+    claim = await db.get(Claim, claim_id)
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    if claim.status != "rejected":
+        raise HTTPException(status_code=400, detail="Only rejected claims can be challenged")
+
+    claim.status = "pending_review"
+    claim.reviewed_at = None
+    claim.reviewed_by = None
+
+    audit = AuditLog(
+        claim_id=claim_id,
+        event_type="claim_challenge",
+        content=f"Claim challenged by rider {claim.rider_id}. Status reset to pending_review.",
+        generated_by=claim.rider_id,
+    )
+    db.add(audit)
+    await db.commit()
+
+    return {
+        "claim_id": claim_id,
+        "status": "pending_review",
+        "message": "Claim has been reopened for review",
     }
 
 

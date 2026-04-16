@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -9,6 +10,7 @@ import {
   Legend,
 } from 'recharts';
 import { CLAIMS_CHART_DATA, getClaimsTotals } from '../../data/chartMockData';
+import { getClaimsByZone } from '../../services/api';
 
 interface TooltipPayload {
   dataKey: string;
@@ -53,8 +55,56 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   );
 };
 
+interface ZoneClaimData {
+  zone_id: string;
+  zone_name: string;
+  total_claims: number;
+  approved: number;
+  rejected: number;
+  pending: number;
+}
+
 export default function ClaimsChart() {
-  const totals = getClaimsTotals();
+  const [zoneData, setZoneData] = useState<ZoneClaimData[] | null>(null);
+  const [useApi, setUseApi] = useState(true);
+
+  useEffect(() => {
+    getClaimsByZone()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setZoneData(data);
+        } else {
+          setUseApi(false);
+        }
+      })
+      .catch(() => setUseApi(false));
+  }, []);
+
+  // Build chart data from API or mock
+  const chartData = useApi && zoneData
+    ? zoneData.map((z) => ({
+        day: z.zone_name.slice(0, 8),
+        date: z.zone_id,
+        approved: z.approved,
+        pending: z.pending,
+        rejected: z.rejected,
+        total: z.total_claims,
+      }))
+    : CLAIMS_CHART_DATA;
+
+  const totals = useApi && zoneData
+    ? zoneData.reduce(
+        (acc, z) => ({
+          approved: acc.approved + z.approved,
+          pending: acc.pending + z.pending,
+          rejected: acc.rejected + z.rejected,
+          total: acc.total + z.total_claims,
+        }),
+        { approved: 0, pending: 0, rejected: 0, total: 0 }
+      )
+    : getClaimsTotals();
+
+  const subtitle = useApi && zoneData ? `By zone · ${totals.total} total claims` : `Last 7 days · ${totals.total} total claims`;
 
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
@@ -62,7 +112,7 @@ export default function ClaimsChart() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-white font-bold text-lg">Claims Overview</h3>
-          <p className="text-slate-400 text-xs">Last 7 days · {totals.total} total claims</p>
+          <p className="text-slate-400 text-xs">{subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
@@ -84,7 +134,7 @@ export default function ClaimsChart() {
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
-            data={CLAIMS_CHART_DATA}
+            data={chartData}
             margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
           >
             <defs>
