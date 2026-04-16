@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from db.database import get_db
 from models.rider import Rider
 from models.zone import Zone
@@ -141,12 +142,22 @@ async def eshram_kyc(
     if verification_result["verified"]:
         rider.kyc_verified = True
 
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="e-Shram ID is already linked to another rider account.",
+        )
 
+    masked_eshram_id = f"***{payload.eshram_id[-4:]}"
     logger.info(
-        f"[e-Shram KYC] rider={rider_id} eshram_id={payload.eshram_id} "
-        f"verified={verification_result['verified']} "
-        f"income_verified={verification_result['income_verified']}"
+        "[e-Shram KYC] rider=%s eshram_id=%s verified=%s income_verified=%s",
+        rider_id,
+        masked_eshram_id,
+        verification_result["verified"],
+        verification_result["income_verified"],
     )
 
     return EShramVerificationResponse(
@@ -235,12 +246,12 @@ async def _call_eshram_portal(
         )
     else:
         message_parts.append("Income check skipped — no declared earnings provided.")
-
-    return {
-        "verified": True,   # identity always verified in sandbox
-        "income_verified": income_verified,
-        "income_match": income_match,
-        "income_deviation_pct": income_deviation_pct,
-        "portal_weekly_income_estimate": round(portal_weekly_income, 0),
-        "message": " ".join(message_parts),
-    }
+    if stored_earnings_baseline is None:
+        return {
+            "verified": True,   # identity always verified in sandbox
+            "income_verified": income_verified,
+            "income_match": income_match,
+            "income_deviation_pct": income_deviation_pct,
+            "portal_weekly_income_estimate": round(portal_weekly_income, 0),
+            "message": " ".join(message_parts),
+        }

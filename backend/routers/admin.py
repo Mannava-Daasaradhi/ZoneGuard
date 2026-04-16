@@ -8,7 +8,7 @@ from models.policy import Policy
 from models.claim import Claim
 from models.payout import Payout
 from models.fraud import FraudFlag
-
+from starlette.concurrency import run_in_threadpool
 from ml.federated import run_federated_round
 from ml.fraud_shield import detect_coordination_ring
 from datetime import datetime, timezone
@@ -98,7 +98,8 @@ async def trigger_federated_round(n_rounds: int = 3):
         # run_federated_round is CPU-bound (IsolationForest training).
         # For a hackathon demo with a single admin user this is fine.
         # In production this would be offloaded via asyncio.to_thread().
-        result = run_federated_round(n_rounds=max(1, min(n_rounds, 5)))
+        
+        result = await run_in_threadpool(run_federated_round, n_rounds=max(1, min(n_rounds, 5)))
         return {
             "status": "complete",
             "federated_training": result,

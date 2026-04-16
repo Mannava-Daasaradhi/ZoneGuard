@@ -105,6 +105,7 @@ class FederatedFraudClient:
 
     def __init__(self, city_id: str, local_data: Optional[np.ndarray] = None):
         self.city_id = city_id
+        self._n_training_samples = 0
         self.model = IsolationForest(
             n_estimators=N_ESTIMATORS,
             max_samples=MAX_SAMPLES,
@@ -127,6 +128,7 @@ class FederatedFraudClient:
             return
         self.model.fit(X)
         self._trained = True
+        self._n_training_samples = int(X.shape[0]) 
         logger.info(f"[{self.city_id}] Local model trained on {X.shape[0]} samples.")
 
     # ------------------------------------------------------------------
@@ -152,7 +154,7 @@ class FederatedFraudClient:
         ])
         # Append global offset_ as the final element
         weights = np.append(offsets, self.model.offset_)
-        return weights, self.model.max_samples_
+        return weights, self._n_training_samples
 
     def set_weights(self, weights: np.ndarray) -> None:
         """

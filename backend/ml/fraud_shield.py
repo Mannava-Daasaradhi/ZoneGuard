@@ -392,13 +392,14 @@ def analyze_zone_event_batch(
             f"{high_risk_count} individual high-risk claim(s) flagged for review. "
             f"Ring pattern: {verdict}."
         )
+    elif verdict == "suspicious":
+        summary = f"Zone {zone_id}: ...Hold for manual review."
+    elif verdict == "insufficient_data":
+        summary = f"Zone {zone_id}: ...Do not auto-payout on batch verdict alone."
+    elif high_risk_count > 0:
+        summary = f"...{high_risk_count} individual high-risk claim(s) flagged."
     else:
-        # Genuine batch verdict, no individual flags — safe to auto-payout.
-        summary = (
-            f"Zone {zone_id}: {len(claims)} claims processed. "
-            f"No ring detected. No individual high-risk flags. "
-            f"Approved for auto-payout."
-        )
+        summary = f"...No ring detected. No individual high-risk flags. Approved for auto-payout."
 
     return {
         "ring_analysis": ring_analysis,
