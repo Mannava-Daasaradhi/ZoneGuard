@@ -21,9 +21,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from backend.core.config import settings
-from backend.features.feature_12.llm_client import LLMDecisionOutput
-from backend.features.feature_12.models import AutopilotDecision
+from core.config import settings
+from features.feature_12.llm_client import LLMDecisionOutput
+from features.feature_12.models import AutopilotDecision
 
 logger = logging.getLogger(__name__)
 

@@ -14,7 +14,7 @@ Integration note (per spec — do NOT modify backend/api/router.py)
 ─────────────────────────────────────────────────────────────────
   Add the following line to backend/api/router.py when wiring this feature:
 
-      from backend.features.feature_12.autopilot_router import router as f12_router
+      from features.feature_12.autopilot_router import router as f12_router
       app.include_router(f12_router, prefix="/api/v1", tags=["SmartClaim Autopilot"])
 
   See CHANGES.md for the full integration diff.
@@ -28,9 +28,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from backend.core.database import get_db
-from backend.features.feature_12.autopilot_service import AutopilotService
-from backend.features.feature_12.models import AutopilotRun, AutopilotOverride
+from core.database import get_db
+from features.feature_12.autopilot_service import AutopilotService
+from features.feature_12.models import AutopilotRun, AutopilotOverride
 
 logger = logging.getLogger(__name__)
 

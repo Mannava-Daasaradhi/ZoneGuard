@@ -32,19 +32,19 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from backend.core.config import settings
+from core.config import settings
 # Read-only imports from core modules (rule: do not modify these files)
-from backend.ml.fraud_shield import FraudShield, FraudShieldResult
-from backend.models.zones import Claim, QuadSignal
+from ml.fraud_shield import FraudShield, FraudShieldResult
+from models.zones import Claim, QuadSignal
 
-from backend.features.feature_12.guard_rails import GuardRailOrchestrator, GuardRailResult
-from backend.features.feature_12.llm_client import (
+from features.feature_12.guard_rails import GuardRailOrchestrator, GuardRailResult
+from features.feature_12.llm_client import (
     AutopilotLLMClient,
     LLMDecisionInput,
     LLMDecisionOutput,
     LLMParseError,
 )
-from backend.features.feature_12.models import (
+from features.feature_12.models import (
     AutopilotDecision,
     AutopilotDriftSnapshot,
     AutopilotRun,
@@ -550,7 +550,7 @@ class AutopilotService:
         override_record["autopilot_run_id"] = run_id
 
         # Write to DB
-        from backend.features.feature_12.models import AutopilotOverride, OverrideReason
+        from features.feature_12.models import AutopilotOverride, OverrideReason
         override_row = AutopilotOverride(
             id=str(uuid.uuid4()),
             claim_id=claim_id,

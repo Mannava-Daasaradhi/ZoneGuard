@@ -20,7 +20,7 @@ from typing import Optional
 
 import anthropic
 
-from backend.core.config import settings
+from core.config import settings
 
 logger = logging.getLogger(__name__)
 

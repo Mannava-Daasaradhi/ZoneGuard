@@ -15,7 +15,7 @@ Endpoints:
 
 INTEGRATION NOTE (do not modify router.py — see CHANGES.md):
   Add to backend/main.py (or wherever routers are included):
-    from backend.features.feature_14.pulse_router import router as pulse_router
+    from features.feature_14.pulse_router import router as pulse_router
     app.include_router(pulse_router)
 """
 
