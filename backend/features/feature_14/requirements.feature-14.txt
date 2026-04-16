@@ -1,0 +1,14 @@
+# ZoneGuard Pulse — Feature 14
+# Extra requirements for feature_14 ONLY.
+# Do NOT modify backend/requirements.txt.
+# Install alongside base requirements:
+#   pip install -r backend/requirements.txt -r requirements.feature-14.txt
+
+# No net-new packages required for Feature 14.
+# All dependencies (FastAPI, SQLAlchemy, Pydantic, etc.) are already
+# declared in backend/requirements.txt and are re-used here without
+# adding new transitive dependencies.
+#
+# If future sub-features of Feature 14 require additional packages,
+# add them below with pinned versions:
+# example-package==1.2.3

@@ -6,6 +6,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import OnboardingPage from './pages/Onboarding'
 import PolicyPage from './pages/PolicyPage'
 import { ChatWidget } from './components/Chatbot'
+import PulseDashboard from './features/Feature14/PulseDashboard'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/policy" element={<PolicyPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/pulse/:zoneId" element={<PulseDashboardRoute />} />
       </Routes>
       <ChatWidget />
     </NotificationProvider>

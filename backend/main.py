@@ -5,7 +5,8 @@ import logging
 
 from config import get_settings
 from routers import riders, zones, policies, claims, signals, payouts, admin, simulator, premium, notifications
-
+from features.feature_14.pulse_router import router as pulse_router
+app.include_router(pulse_router)
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
