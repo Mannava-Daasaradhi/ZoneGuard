@@ -61,6 +61,8 @@ async def list_claims(
     status: str = Query(None),
     zone_id: str = Query(None),
     rider_id: str = Query(None),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Claim)
@@ -72,9 +74,8 @@ async def list_claims(
         query = query.where(Claim.rider_id == rider_id)
     query = query.order_by(Claim.created_at.desc())
 
-    result = await db.execute(query)
-    claims = result.scalars().all()
-    return [ClaimResponse.model_validate(c) for c in claims]
+    from utils.pagination import paginate
+    return await paginate(db, query, ClaimResponse, page, per_page)
 
 
 @router.get("/{claim_id}")

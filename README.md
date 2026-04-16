@@ -1,11 +1,11 @@
 # ZoneGuard
 ### AI-Powered Parametric Income Protection for Amazon Flex Last-Mile Riders
 
-**Guidewire DEVTrails 2026 — Phase 2 Complete · Working Prototype**
+**Guidewire DEVTrails 2026 — Phase 3 Complete · Demo-Ready Platform**
 
 > *"A flash flood doesn't wait for a claims adjuster. Neither should a delivery rider's rent."*
 
-![Phase](https://img.shields.io/badge/Phase-2%20Complete-brightgreen)
+![Phase](https://img.shields.io/badge/Phase-3%20Complete-brightgreen)
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen)
 ![Backend](https://img.shields.io/badge/Backend-FastAPI%20Python-blue)
 ![Frontend](https://img.shields.io/badge/Frontend-React%2019%20TypeScript-61dafb)
@@ -20,7 +20,7 @@
 
 ---
 
-## Phase 2 — Working Prototype
+## Phase 3 — Demo-Ready Platform
 
 ### Quick Start (Full Stack in 3 Commands)
 
@@ -42,7 +42,7 @@ Open **http://localhost:5173** → ZoneGuard is live.
 └─────────────────┬───────────────────────────────────────────┘
                   │ HTTP /api/v1/
 ┌─────────────────▼───────────────────────────────────────────┐
-│  FastAPI Backend (:8000) — 9 routers, 11 ORM models        │
+│  FastAPI Backend (:8000) — 13 routers, 11 ORM models       │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  ML Pipeline                                         │   │
 │  │  ZoneRisk Scorer → QuadSignal Fusion → FraudShield  │   │
@@ -87,20 +87,56 @@ Open **http://localhost:5173** → ZoneGuard is live.
 - [x] **Docker Compose full stack** — 4 services (frontend nginx, backend, PostgreSQL 16, Redis 7)
 - [x] **GitHub Actions CI** — lint + build (frontend) + app load verify (backend)
 
+### Phase 3 Deliverables (Demo-Ready)
+
+- [x] **13 API routers** — admin, claims, signals, riders, zones, payouts, simulator, policies, premium, notifications, chat, auth, demo
+- [x] **Admin analytics endpoints** — claims-by-zone, payouts-over-time, loss-ratio-trend, signal-history
+- [x] **Payout retry system** — max 3 retries with idempotency check, stats endpoint
+- [x] **Claims expansion** — stats aggregation, Gemini audit report fetch/generate, rider challenge mechanism
+- [x] **Signals expansion** — at-risk zones, signal history, baselines comparison, NDMA override
+- [x] **Riders/Zones expansion** — list/update riders, zone riders/policies/claims subresources
+- [x] **Gemini-powered chatbot** — API-first with local keyword fallback
+- [x] **Real-time notifications** — triggered by simulator and policy creation events
+- [x] **JWT authentication** — optional (`AUTH_ENABLED=false` default), demo creds: `rider/rider123`, `admin/admin123`
+- [x] **Error boundary** — graceful crash recovery, no white screen during demo
+- [x] **404 page** — proper not-found page with navigation back
+- [x] **Demo tour** — `?demo=true` activates 6-step guided overlay on admin dashboard
+- [x] **Demo reset** — `POST /api/v1/demo/reset` clears transient data for fresh judge runs
+- [x] **Pagination** — all list endpoints support `page` + `per_page` params
+- [x] **API rate limiting** — slowapi 100 req/min (optional dependency)
+- [x] **Zone baselines** — seeded from ZoneTwin historical data
+- [x] **Structured logging** — all integrations log warnings on fallback
+- [x] **62 backend tests** — pytest: signal fusion, fraud detection, exclusion engine, zone risk, zone twin
+- [x] **24 frontend tests** — vitest: chat responses, API service layer
+
 ### Key API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/v1/riders/register` | Register new rider |
+| GET | `/api/v1/riders` | List riders (paginated, zone/KYC filter) |
 | POST | `/api/v1/policies` | Create policy |
 | GET | `/api/v1/premium/calculate?zone_id=hsr` | Dynamic premium breakdown |
 | POST | `/api/v1/simulator/trigger` | Fire disruption scenario |
 | GET | `/api/v1/signals/active-events` | Live signal feed |
-| GET | `/api/v1/claims?status=pending_review` | Claims queue |
+| GET | `/api/v1/signals/at-risk` | Zones with 2+ breached signals |
+| POST | `/api/v1/signals/ndma-override/{zone_id}` | NDMA flood alert override |
+| GET | `/api/v1/claims?status=pending_review` | Claims queue (paginated) |
+| GET | `/api/v1/claims/stats` | Approval rate, avg payout, fraud score |
 | POST | `/api/v1/claims/{id}/review` | Approve / reject claim |
-| GET | `/api/v1/payouts?rider_id=X` | Payout history |
+| POST | `/api/v1/claims/{id}/challenge` | Rider contest rejected claim |
+| GET | `/api/v1/payouts?rider_id=X` | Payout history (paginated) |
+| GET | `/api/v1/payouts/stats` | Payout aggregates + success rate |
+| POST | `/api/v1/payouts/{id}/retry` | Retry failed payout (max 3) |
 | GET | `/api/v1/admin/kpis` | Dashboard KPIs |
+| GET | `/api/v1/admin/claims` | Admin claims queue (paginated, filtered) |
+| GET | `/api/v1/admin/analytics/claims-by-zone` | Claims aggregated by zone |
+| GET | `/api/v1/admin/analytics/loss-ratio-trend` | 7-day rolling loss ratio |
+| POST | `/api/v1/auth/login` | JWT login (demo creds) |
+| POST | `/api/v1/chat` | Gemini-powered chatbot |
+| POST | `/api/v1/demo/reset` | Reset transient data for demo |
 | GET | `/health` | Health check |
+| GET | `/health/detailed` | DB + API key status |
 
 Full Swagger docs: http://localhost:8000/docs
 
@@ -124,7 +160,7 @@ See [DEPLOY.md](DEPLOY.md) for:
 
 ## Table of Contents
 
-0. [Phase 2 — Working Prototype](#phase-2--working-prototype) ← **Start Here**
+0. [Phase 3 — Demo-Ready Platform](#phase-3--demo-ready-platform) ← **Start Here**
 1. [The Problem We Are Solving](#1-the-problem-we-are-solving)
 2. [ZoneGuard Platform Overview](#2-zoneguard-platform-overview)
 3. [Persona: Why Amazon Flex](#3-persona-why-amazon-flex-e-commerce)

@@ -15,15 +15,22 @@ MAX_RETRIES = 3
 
 
 @router.get("")
-async def list_payouts(rider_id: str = Query(None), db: AsyncSession = Depends(get_db)):
+async def list_payouts(
+    rider_id: str = Query(None),
+    status: str = Query(None),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
     query = select(Payout)
     if rider_id:
         query = query.where(Payout.rider_id == rider_id)
+    if status:
+        query = query.where(Payout.status == status)
     query = query.order_by(Payout.created_at.desc())
 
-    result = await db.execute(query)
-    payouts = result.scalars().all()
-    return [PayoutResponse.model_validate(p) for p in payouts]
+    from utils.pagination import paginate
+    return await paginate(db, query, PayoutResponse, page, per_page)
 
 
 @router.get("/stats")
