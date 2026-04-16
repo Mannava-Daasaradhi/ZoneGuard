@@ -9,10 +9,12 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
   const method = options?.method?.toUpperCase() ?? 'GET'
   const needsBody = method !== 'GET' && method !== 'HEAD'
+  const token = localStorage.getItem('zoneguard_token')
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
       ...(needsBody ? { 'Content-Type': 'application/json' } : {}),
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   })

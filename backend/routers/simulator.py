@@ -7,7 +7,7 @@ the full QuadSignal → Claim → Payout pipeline in real-time.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 from db.database import get_db
 from models.zone import Zone
 from models.simulation import SimulationEvent
@@ -176,11 +176,22 @@ async def trigger_disruption(payload: SimulatorTrigger, db: AsyncSession = Depen
             days_since_policy_start=max(0, (datetime.now(timezone.utc) - policy.coverage_start).days) if policy.coverage_start else 5,
         )
 
+        # Compute consecutive disruption days from recent claims
+        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        recent_claims_result = await db.execute(
+            select(func.count(Claim.id))
+            .where(Claim.rider_id == rider.id)
+            .where(Claim.status.in_(["approved", "pending_review"]))
+            .where(Claim.created_at >= week_ago)
+        )
+        consecutive_days = recent_claims_result.scalar() or 0
+
         # Exclusion check
         excl_check = evaluate_claim_exclusions(
             claim_data={"rider_id": rider.id, "zone_id": payload.zone_id},
             policy_data={"coverage_start": policy.coverage_start},
             fraud_score=fraud["score"],
+            consecutive_disruption_days=consecutive_days,
         )
 
         # Determine status

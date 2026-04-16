@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from db.database import get_db
 from models.zone import Zone
 from models.signal import SignalReading, DisruptionEvent
@@ -11,7 +11,7 @@ from services.signal_poller import poll_zone_signals
 from services.claim_pipeline import process_disruption_event
 from ml.signal_fusion import evaluate_s1, evaluate_s2, evaluate_s3, evaluate_s4, fuse_signals
 from routers.zones import update_signal_cache
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 
 router = APIRouter(prefix="/api/v1/signals", tags=["signals"])
@@ -92,7 +92,17 @@ async def poll_signals(zone_id: str, db: AsyncSession = Depends(get_db)):
         riders_policies = result.all()
 
         riders_with_policies = []
+        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         for rider, policy in riders_policies:
+            # Compute consecutive disruption days from recent claims
+            recent_claims_result = await db.execute(
+                select(func.count(Claim.id))
+                .where(Claim.rider_id == rider.id)
+                .where(Claim.status.in_(["approved", "pending_review"]))
+                .where(Claim.created_at >= week_ago)
+            )
+            consecutive_days = recent_claims_result.scalar() or 0
+
             riders_with_policies.append({
                 "id": rider.id,
                 "weekly_earnings_baseline": rider.weekly_earnings_baseline,
@@ -101,6 +111,7 @@ async def poll_signals(zone_id: str, db: AsyncSession = Depends(get_db)):
                 "policy_id": policy.id,
                 "policy": {"coverage_start": policy.coverage_start},
                 "days_since_policy_start": max(0, (datetime.now(timezone.utc) - policy.coverage_start).days),
+                "consecutive_disruption_days": consecutive_days,
             })
 
         if riders_with_policies:

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ZONES, KPIS, CLAIMS_QUEUE } from '../data/mock'
-import { getZones, getKPIs, getClaims, reviewClaim, getZoneSignals } from '../services/api'
+import { getZones, getKPIs, getClaims, reviewClaim, getZoneSignals, getClaimAuditReport } from '../services/api'
 import KPIStrip from '../components/Admin/KPIStrip'
 import QuadSignalPanel from '../components/Admin/QuadSignalPanel'
 import BengaluruZoneMap from '../components/Map/BengaluruZoneMap'
@@ -9,6 +9,7 @@ import DisruptionSimulator from '../components/Simulator/DisruptionSimulator'
 import ClaimsChart from '../components/Admin/ClaimsChart'
 import PayoutChart from '../components/Admin/PayoutChart'
 import LossRatioWidget from '../components/Admin/LossRatioWidget'
+import { ClaimSkeleton } from '../components/shared/Skeleton'
 import type { KPI, ZoneSignalData, SimulationResult, RawApiZone, RawApiClaim } from '../types'
 
 export default function AdminDashboard() {
@@ -21,6 +22,10 @@ export default function AdminDashboard() {
   const [apiAvailable, setApiAvailable] = useState(false)
   const [expandedClaim, setExpandedClaim] = useState<string | null>(null)
   const [claimStatuses, setClaimStatuses] = useState<Record<string, string>>({})
+  const [claimSearch, setClaimSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [claimsLoading, setClaimsLoading] = useState(true)
+  const [auditReports, setAuditReports] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const init = async () => {
@@ -45,6 +50,8 @@ export default function AdminDashboard() {
       } catch {
         setApiAvailable(false)
         setZones(ZONES as RawApiZone[])
+      } finally {
+        setClaimsLoading(false)
       }
     }
     init()
@@ -103,6 +110,25 @@ export default function AdminDashboard() {
     }
     setClaimStatuses(prev => ({ ...prev, [claimId]: action === 'approve' ? 'approved' : 'rejected' }))
   }
+
+  const handleExpandClaim = async (claimId: string) => {
+    const isExpanding = expandedClaim !== claimId
+    setExpandedClaim(isExpanding ? claimId : null)
+    // Fetch audit report on expand if not cached
+    if (isExpanding && !auditReports[claimId] && apiAvailable) {
+      try {
+        const report = await getClaimAuditReport(claimId)
+        setAuditReports(prev => ({ ...prev, [claimId]: report.content }))
+      } catch { /* no report available */ }
+    }
+  }
+
+  const filteredClaims = claims.filter(c => {
+    const status = claimStatuses[c.id] || c.status
+    const matchesSearch = !claimSearch || (c.zone || c.zone_id || '').toLowerCase().includes(claimSearch.toLowerCase()) || (c.rider_id || '').toLowerCase().includes(claimSearch.toLowerCase()) || c.id.toLowerCase().includes(claimSearch.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || status === statusFilter
+    return matchesSearch && matchesStatus
+  })
 
   const pendingClaims = claims.filter(c => {
     const status = claimStatuses[c.id] || c.status
@@ -242,15 +268,53 @@ export default function AdminDashboard() {
             )}
           </div>
 
+          {/* Search and Filter Bar */}
+          <div className="flex flex-col sm:flex-row gap-2 mb-3">
+            <div className="flex-1 relative">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by zone, rider ID, or claim ID..."
+                value={claimSearch}
+                onChange={(e) => setClaimSearch(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-blue-500"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending_review">Pending Review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="held">Held</option>
+            </select>
+          </div>
+
           <div className="space-y-2.5">
-            {claims.map((claim) => {
+            {claimsLoading ? (
+              <>
+                <ClaimSkeleton />
+                <ClaimSkeleton />
+                <ClaimSkeleton />
+              </>
+            ) : filteredClaims.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-slate-500 text-sm">{claimSearch || statusFilter !== 'all' ? 'No claims match your filters' : 'No claims yet'}</p>
+              </div>
+            ) : null}
+            {!claimsLoading && filteredClaims.map((claim) => {
               const status = claimStatuses[claim.id] || claim.status
               const isPending = status === 'pending' || status === 'pending_review'
               return (
                 <div key={claim.id} className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
                   <button
                     className="w-full p-3 sm:p-4 flex items-center justify-between text-left hover:bg-slate-800/50 transition-colors"
-                    onClick={() => setExpandedClaim(expandedClaim === claim.id ? null : claim.id)}
+                    onClick={() => handleExpandClaim(claim.id)}
                   >
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isPending ? 'bg-amber-400 animate-pulse' : status === 'approved' ? 'bg-emerald-400' : 'bg-red-400'}`} />
@@ -298,14 +362,14 @@ export default function AdminDashboard() {
                         </div>
                       )}
 
-                      {/* Audit summary */}
-                      {claim.auditSummary && (
+                      {/* Audit summary — from API or simulation */}
+                      {(auditReports[claim.id] || claim.auditSummary) && (
                         <div className="mt-2 bg-slate-800 rounded-xl p-3">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs">🤖</span>
-                            <p className="text-slate-300 text-xs font-semibold">AI Audit Report</p>
+                            <p className="text-slate-300 text-xs font-semibold">Gemini AI Audit Report</p>
                           </div>
-                          <p className="text-slate-300 text-xs leading-relaxed">{claim.auditSummary}</p>
+                          <p className="text-slate-300 text-xs leading-relaxed whitespace-pre-line">{auditReports[claim.id] || claim.auditSummary}</p>
                         </div>
                       )}
 
