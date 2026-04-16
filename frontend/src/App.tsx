@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { NotificationProvider } from './components/Notifications'
 import LandingPage from './pages/Landing'
 import RiderDashboard from './pages/RiderDashboard'
@@ -7,7 +7,6 @@ import OnboardingPage from './pages/Onboarding'
 import PolicyPage from './pages/PolicyPage'
 import { ChatWidget } from './components/Chatbot'
 import PulseDashboard from './features/Feature14/PulseDashboard'
-import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 
 function PulseDashboardRoute() {
   const { zoneId } = useParams<{ zoneId: string }>()

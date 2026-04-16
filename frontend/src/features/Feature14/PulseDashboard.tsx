@@ -223,7 +223,10 @@ function DisruptionChart({ buckets }: { buckets: ChartBucket[] }) {
         <Tooltip
           contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
           labelStyle={{ color: '#e2e8f0', fontSize: 12 }}
-          formatter={(value: number) => [`${value}%`, 'Disruption prob.']}
+          formatter={(value) => {
+            const n = typeof value === 'number' ? value : Number(value ?? 0)
+            return [`${n}%`, 'Disruption prob.']
+          }}
         />
         <Bar dataKey="disruption_probability" radius={[3, 3, 0, 0]}>
           {thinned.map((b) => (
