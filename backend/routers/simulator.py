@@ -23,6 +23,7 @@ from ml.zone_twin import counterfactual_inactivity
 from services.exclusion_engine import evaluate_claim_exclusions
 from integrations.gemini import generate_audit_report
 from integrations.payout_sim import process_payout
+from models.notification import create_notification, NotificationType
 from routers.zones import update_signal_cache
 from pydantic import BaseModel
 from datetime import datetime, timezone, timedelta
@@ -243,6 +244,27 @@ async def trigger_disruption(payload: SimulatorTrigger, db: AsyncSession = Depen
                 "id": payout.id, "rider_id": rider.id, "amount": payout_amount,
                 "upi_ref": payout_result["upi_ref"], "status": payout_result["status"],
             })
+
+    # Fire notifications for each rider
+    for claim_info in claims_created:
+        rider_id = claim_info["rider_id"]
+        status = claim_info["status"]
+
+        await create_notification(
+            db=db, rider_id=rider_id, type=NotificationType.CLAIM_CREATED,
+            title="Claim Auto-Triggered",
+            message=f"{scenario['name']} detected in {zone.name}. Claim {status}. Recommended payout: ₹{claim_info['recommended_payout']:,}.",
+            metadata={"claim_id": claim_info["id"], "zone_id": payload.zone_id, "scenario": payload.scenario},
+        )
+
+    for payout_info in payouts_created:
+        rider_id = payout_info["rider_id"]
+        await create_notification(
+            db=db, rider_id=rider_id, type=NotificationType.PAYOUT_SENT,
+            title="Payout Credited",
+            message=f"₹{payout_info['amount']:,} credited to your UPI ({payout_info['upi_ref']}). {scenario['name']} coverage.",
+            metadata={"payout_id": payout_info["id"], "upi_ref": payout_info["upi_ref"]},
+        )
 
     await db.commit()
 

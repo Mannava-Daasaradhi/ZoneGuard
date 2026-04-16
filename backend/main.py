@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from config import get_settings
-from routers import riders, zones, policies, claims, signals, payouts, admin, simulator, premium, notifications
+from routers import riders, zones, policies, claims, signals, payouts, admin, simulator, premium, notifications, chat
 
 # Configure logging
 logging.basicConfig(
@@ -66,6 +66,7 @@ app.include_router(admin.router)
 app.include_router(simulator.router)
 app.include_router(premium.router)
 app.include_router(notifications.router)
+app.include_router(chat.router)
 
 
 @app.get("/")
@@ -86,6 +87,7 @@ async def root():
             "simulator": "/api/v1/simulator",
             "premium": "/api/v1/premium",
             "notifications": "/api/v1/notifications",
+            "chat": "/api/v1/chat",
         },
     }
 

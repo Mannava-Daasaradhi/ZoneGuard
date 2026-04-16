@@ -114,5 +114,62 @@ export const stopSimulation = (simId: string) =>
   fetchAPI<SimulationResult>(`/api/v1/simulator/stop/${simId}`, { method: 'DELETE' })
 export const getScenarios = () => fetchAPI<ScenariosResponse>('/api/v1/simulator/scenarios')
 
+// Chat
+export const sendChatMessage = (message: string, riderId?: string) =>
+  fetchAPI<{ response: string; source: string }>('/api/v1/chat', {
+    method: 'POST',
+    body: JSON.stringify({ message, rider_id: riderId }),
+  })
+
+// Notifications
+export const getNotifications = (riderId: string) =>
+  fetchAPI<{ id: string; rider_id: string; type: string; title: string; message: string; data: Record<string, unknown>; is_read: boolean; created_at: string }[]>(
+    `/api/v1/notifications?rider_id=${riderId}`
+  )
+export const getUnreadCount = (riderId: string) =>
+  fetchAPI<{ rider_id: string; unread_count: number }>(`/api/v1/notifications/unread-count?rider_id=${riderId}`)
+
+// Admin (expanded)
+export const getAdminClaims = (params?: { status?: string; zone_id?: string; page?: number; per_page?: number }) => {
+  const qs = params ? new URLSearchParams(
+    Object.fromEntries(Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)]))
+  ).toString() : ''
+  return fetchAPI<{ items: RawApiClaim[]; total: number; page: number; per_page: number; pages: number }>(
+    `/api/v1/admin/claims${qs ? `?${qs}` : ''}`
+  )
+}
+export const getAdminRiders = (params?: { zone_id?: string; kyc_verified?: boolean; page?: number }) => {
+  const qs = params ? new URLSearchParams(
+    Object.fromEntries(Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)]))
+  ).toString() : ''
+  return fetchAPI<{ items: RawRider[]; total: number; page: number; pages: number }>(
+    `/api/v1/admin/riders${qs ? `?${qs}` : ''}`
+  )
+}
+export const getClaimAuditReport = (claimId: string) =>
+  fetchAPI<{ claim_id: string; content: string; model_used: string; generated_at: string }>(
+    `/api/v1/admin/claims/${claimId}/audit-report`
+  )
+export const getClaimsByZone = () =>
+  fetchAPI<{ zone_id: string; zone_name: string; total_claims: number; approved: number; rejected: number; pending: number; total_payout: number }[]>(
+    '/api/v1/admin/analytics/claims-by-zone'
+  )
+export const getPayoutsOverTime = (days?: number) =>
+  fetchAPI<{ date: string; count: number; total_amount: number }[]>(
+    `/api/v1/admin/analytics/payouts-over-time${days ? `?days=${days}` : ''}`
+  )
+export const getLossRatioTrend = () =>
+  fetchAPI<{ date: string; premiums: number; payouts: number; loss_ratio: number }[]>(
+    '/api/v1/admin/analytics/loss-ratio-trend'
+  )
+export const getPayoutStats = () =>
+  fetchAPI<{ total: number; settled: number; failed: number; processing: number; avg_amount: number; total_amount: number; success_rate: number }>(
+    '/api/v1/payouts/stats'
+  )
+export const retryPayout = (payoutId: string) =>
+  fetchAPI<{ payout_id: string; status: string; retry_count: number; upi_ref: string }>(
+    `/api/v1/payouts/${payoutId}/retry`, { method: 'POST' }
+  )
+
 // Re-export Zone for consumers that used the old `getZones` → Zone[] pattern
 export type { Zone }

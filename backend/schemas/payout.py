@@ -10,6 +10,7 @@ class PayoutResponse(BaseModel):
     amount: float
     upi_ref: str
     status: str
+    retry_count: int = 0
     gateway_response: Optional[str]
     created_at: datetime
     settled_at: Optional[datetime]

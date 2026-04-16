@@ -7,6 +7,8 @@ import PolicyCard from '../components/Policy/PolicyCard'
 import CoverageCard from '../components/Rider/CoverageCard'
 import BengaluruZoneMap from '../components/Map/BengaluruZoneMap'
 import { QuadSignalWidget } from '../components/Signals'
+import NotificationBell from '../components/Notifications/NotificationBell'
+import { useNotifications } from '../hooks/useNotifications'
 import type { PolicyData, ZoneSignalData, RawApiZone, RawApiPayout } from '../types'
 
 export default function RiderDashboard() {
@@ -17,6 +19,7 @@ export default function RiderDashboard() {
   const [signalData, setSignalData] = useState<ZoneSignalData | null>(null)
   const [zones, setZones] = useState<RawApiZone[]>([])
   const [currentZoneId, setCurrentZoneId] = useState<string>('hsr')
+  const { fetchNotifications } = useNotifications()
 
   useEffect(() => {
     const init = async () => {
@@ -46,6 +49,9 @@ export default function RiderDashboard() {
 
         const signals = await getZoneSignals(r.zone_id || 'hsr')
         setSignalData(signals)
+
+        // Fetch notifications for this rider
+        fetchNotifications(storedRiderId)
       } catch {
         // Fallback to mock data — QuadSignalWidget will handle its own loading state
       }
@@ -74,9 +80,12 @@ export default function RiderDashboard() {
             <p className="text-stone-500 text-xs">{rider.riderId}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-emerald-700 text-xs font-semibold">Covered</span>
+        <div className="flex items-center gap-3">
+          <NotificationBell />
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-emerald-700 text-xs font-semibold">Covered</span>
+          </div>
         </div>
       </header>
 
